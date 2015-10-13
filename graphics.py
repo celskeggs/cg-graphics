@@ -9,7 +9,7 @@ see http://creativecommons.org/licenses/by-nc-sa/3.0/ for details
 
 print "using graphics.py library version 3.8"
 
-import pygame, os, math, colors, keys, joysticks
+import pygame, os, math, colors, keys, joysticks, fps
 
 
 class World:
@@ -26,7 +26,6 @@ class GameLibInfo:
     def __init__(self):
         self.world = None
         self.graphicsInited = False
-        self.frameRate = 60
         self.windowWidth = 0
         self.windowHeight = 0
         self.fonts = {}
@@ -35,12 +34,8 @@ class GameLibInfo:
         self.foreground = (0, 0, 0)
         self.nextEventType = pygame.USEREVENT
         self.keysPressedNow = {}
-        self.FPStime = 0
-        self.FPSinterval = 0
-        self.FPScount = 0
         self.joyinfo = joysticks.JoysticksInfo()
-        self.clock = None
-        self.startTime = None
+        self.fps = fps.GameClock()
         self.keepRunning = False
 
     def initGraphics(self):
@@ -65,18 +60,8 @@ class GameLibInfo:
         onGameControllerButtonRelease(lambda world, device, button: 0)
 
     def startGame(self):
-        self.clock = pygame.time.Clock()
-        self.startTime = pygame.time.get_ticks()
+        self.fps.start()
         self.keepRunning = True
-
-    def maybePrintFPS(self):
-        self.FPScount += 1
-        if self.FPSinterval > 0:
-            time = pygame.time.get_ticks()
-            if time > self.FPStime + self.FPSinterval:
-                print getActualFrameRate()
-                self.FPStime = time
-                self.FPScount = 0
 
 
 _GLI = GameLibInfo()
@@ -122,14 +107,8 @@ def setForeground(foreground):
     _GLI.foreground = foreground
 
 
-def getActualFrameRate():
-    return _GLI.clock.get_fps()
-
-
-def displayFPS(interval):
-    _GLI.FPSinterval = interval * 1000
-    _GLI.FPStime = pygame.time.get_ticks()
-    _GLI.FPScount = 0
+getActualFrameRate = _GLI.fps.getActualFPS
+displayFPS = _GLI.fps.display
 
 
 def getWindowWidth():
@@ -564,8 +543,7 @@ def runGraphics(startFunction, updateFunction, drawFunction):
                 _GLI.screen.fill(_GLI.background)
             drawFunction(_GLI.world)
             pygame.display.flip()
-            _GLI.maybePrintFPS()
-            _GLI.clock.tick(_GLI.frameRate)
+            _GLI.fps.tick()
     finally:
         pygame.quit()
 
@@ -574,16 +552,9 @@ def getWorld():
     return _GLI.world
 
 
-def getElapsedTime():
-    return pygame.time.get_ticks() - _GLI.startTime
-
-
-def resetTime():
-    _GLI.startTime = pygame.time.get_ticks()
-
-
-def setFrameRate(frameRate):
-    _GLI.frameRate = frameRate
+getElapsedTime = _GLI.fps.getElapsedTime
+resetTime = _GLI.fps.resetTime
+setFrameRate = _GLI.fps.setTargetFPS
 
 ###################################################################
 # Backward Compatibility
