@@ -23,7 +23,6 @@ class Point:
 
 
 class GameLibInfo:
-
     def __init__(self):
         self.world = None
         self.graphicsInited = False
@@ -40,6 +39,9 @@ class GameLibInfo:
         self.FPSinterval = 0
         self.FPScount = 0
         self.joyinfo = joysticks.JoysticksInfo()
+        self.clock = None
+        self.startTime = None
+        self.keepRunning = False
 
     def initGraphics(self):
         if not self.graphicsInited:
@@ -429,7 +431,6 @@ def sameKeys(key1, key2):
     if code2 is None:
         raise Exception, "unknown key name: " + key2
     return code1 == code2
-
 
 #########################################################
 
