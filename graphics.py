@@ -27,7 +27,7 @@ class Point:
 class GameLibInfo:
     def __init__(self):
         self.initialize()
-        
+
     def initialize(self):
         self.world = None
         self.graphicsInited = False
@@ -132,7 +132,6 @@ class GameLibInfo:
             for name in nameList:
                 self.name2keyDict[name.lower()] = code
 
-        
 _GLI = GameLibInfo()
 
 def makeGraphicsWindow(width, height, fullscreen=False):
@@ -146,7 +145,7 @@ def initGraphics():
     _GLI.initializeListeners()
     _GLI.initializeJoysticks()
     _GLI.graphicsInited = True
-    
+
 def endGraphics():
     _GLI.keepRunning = False
 
@@ -231,7 +230,7 @@ def fillRectangle(x, y, width, height, color=_GLI.foreground):
 
 def drawPolygon(pointlist, color=_GLI.foreground, thickness=1):
     pygame.draw.polygon(_GLI.screen, lookupColor(color), pointlist, int(thickness))
-    
+
 def fillPolygon(pointlist, color=_GLI.foreground):
     drawPolygon(pointlist, color, 0)
 
@@ -259,19 +258,6 @@ def drawString(text, x, y, size=30, color=_GLI.foreground, bold=False, italic=Fa
 
 def getFontList():
     return pygame.font.get_fonts()
-
-##def drawString(text, x, y, size=30, color=_GLI.foreground, draw=True):
-##    if size not in _GLI.fonts:
-##        font = pygame.font.Font(None, size)
-##        _GLI.fonts[size] = font
-##    else:
-##        font = _GLI.fonts[size]
-##    textimage = font.render(str(text), True, lookupColor(color))
-##    if draw:
-##        _GLI.screen.blit(textimage, (int(x), int(y)))
-##    return (textimage.get_width(), textimage.get_height())
-
-
 
 #########################################################
 
@@ -370,11 +356,9 @@ def onKeyRelease(listenerFunction, key):
 def onAnyKeyRelease(listenerFunction):
     _GLI.eventListeners["keyup"] = listenerFunction
 
-
-    
 def onMousePress(listenerFunction):
     _GLI.eventListeners["mousedown"] = listenerFunction
-    
+
 def onMouseRelease(listenerFunction):
     _GLI.eventListeners["mouseup"] = listenerFunction
 
@@ -389,13 +373,13 @@ def onMouseMotion(listenerFunction):
 
 def onGameControllerStick(listenerFunction):
     _GLI.eventListeners["stickmotion"] = listenerFunction
-    
+
 def onGameControllerDPad(listenerFunction):
     _GLI.eventListeners["dpadmotion"] = listenerFunction
-    
+
 def onGameControllerButtonPress(listenerFunction):
     _GLI.eventListeners["joybuttondown"] = listenerFunction
-    
+
 def onGameControllerButtonRelease(listenerFunction):
     _GLI.eventListeners["joybuttonup"] = listenerFunction
 
@@ -497,14 +481,14 @@ def gameControllerStickAxis(axis, device=0):
             value = joystick.get_axis(axis)
             if abs(value) > _GLI.joystickDeadZone:
                 return value
-    return 0            
+    return 0
 
 def gameControllerSetStickAxesNames(axesList, device=0):
     if device < _GLI.numJoysticks:
         labelDict = _GLI.joystickLabels[device]
         for i in range(len(axesList)):
             labelDict[axesList[i]] = i
-        
+
 def gameControllerButton(button, device=0):
     if device < _GLI.numJoysticks:
         joystick = _GLI.joysticks[device]
@@ -512,7 +496,7 @@ def gameControllerButton(button, device=0):
         if button >= 0 and button < joystick.get_numbuttons():
             value = joystick.get_button(button)
             return (value == 1)
-    return False            
+    return False
 
 def gameControllerDPadX(dpad=0, device=0):
     if device < _GLI.numJoysticks:
@@ -520,7 +504,7 @@ def gameControllerDPadX(dpad=0, device=0):
         if dpad < joystick.get_numhats():
             (dx,dy) = joystick.get_hat(dpad)
             return dx
-    return 0            
+    return 0
 
 def gameControllerDPadY(dpad=0, device=0):
     if device < _GLI.numJoysticks:
@@ -528,7 +512,7 @@ def gameControllerDPadY(dpad=0, device=0):
         if dpad < joystick.get_numhats():
             (dx,dy) = joystick.get_hat(dpad)
             return dy
-    return 0            
+    return 0
 
 #########################################################
 # Math functions
@@ -558,9 +542,7 @@ def pointInPolygon(x, y, polygon):
         j = i
         i += 1
     return inside
-        
-    
-            
+
 #########################################################
 
 # use animate for non-interactive animations
@@ -577,8 +559,6 @@ def animate(drawFunction, timeLimit, repeat=False):
         drawFunction(float(getElapsedTime()))
     runGraphics(startAnimation, timeExpired, drawAnimationFrame)
 
-
-
 # use runGraphics for interactive programs like games
 def runGraphics(startFunction, updateFunction, drawFunction):
     try:
@@ -591,7 +571,6 @@ def runGraphics(startFunction, updateFunction, drawFunction):
                 if event.type == pygame.QUIT:
                     _GLI.keepRunning = False
                     break
-                    
                 elif event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_ESCAPE:
                         _GLI.keepRunning = False
@@ -602,14 +581,12 @@ def runGraphics(startFunction, updateFunction, drawFunction):
                             _GLI.eventListeners[("keydown",event.key)](_GLI.world)
                         else:
                             _GLI.eventListeners["keydown"](_GLI.world, event.key)
-                            
                 elif event.type == pygame.KEYUP:
                     _GLI.keysPressedNow[event.key] = False
                     if ("keyup",event.key) in _GLI.eventListeners:
                         _GLI.eventListeners[("keyup",event.key)](_GLI.world)
                     else:
                         _GLI.eventListeners["keyup"](_GLI.world, event.key)
-                    
                 elif event.type == pygame.MOUSEBUTTONDOWN:
                     if event.button <= 3:
                         _GLI.eventListeners["mousedown"](_GLI.world, event.pos[0], event.pos[1], event.button)
@@ -626,7 +603,6 @@ def runGraphics(startFunction, updateFunction, drawFunction):
                         button2 = (event.buttons[1] == 1)
                         button3 = (event.buttons[2] == 1)
                         _GLI.eventListeners["mousemotion"](_GLI.world, event.pos[0],event.pos[1],event.rel[0],event.rel[1],button1,button2,button3)
-
                 elif event.type == pygame.JOYAXISMOTION:
                     if abs(event.value) < _GLI.joystickDeadZone:
                         joystickValue = 0
@@ -639,10 +615,8 @@ def runGraphics(startFunction, updateFunction, drawFunction):
                     _GLI.eventListeners["joybuttonup"](_GLI.world, event.joy, event.button+1)
                 elif event.type == pygame.JOYBUTTONDOWN:
                     _GLI.eventListeners["joybuttondown"](_GLI.world, event.joy, event.button+1)
-                    
                 elif event.type >= pygame.USEREVENT:   # timer event
                     _GLI.eventListeners["timer"+str(event.type)](_GLI.world)
-                    
             updateFunction(_GLI.world)
             if isinstance(_GLI.background, pygame.Surface):
                 _GLI.screen.blit(_GLI.background, (0,0))
@@ -667,45 +641,6 @@ def resetTime():
 def setFrameRate(frameRate):
     _GLI.frameRate = frameRate
 
-#########################################################
-
-# these functions are intended for use in non-animated graphics programs
-
-##def redrawWindow():
-##    pygame.display.update()
-##    checkForWindowClosing()
-##
-##def checkForWindowClosing():
-##    if pygame.event.peek(pygame.QUIT):
-##        quitGraphics()
-##            
-##def waitForWindowClosing():
-##    while True:
-##        event = pygame.event.wait()
-##        if event.type == pygame.QUIT:
-##            quitGraphics()
-##
-##def waitForMouseClick():
-##    while True:
-##        event = pygame.event.wait()
-##        if event.type == pygame.QUIT:
-##            quitGraphics()
-##        elif event.type == pygame.MOUSEBUTTONDOWN:
-##            return event.pos
-##
-##def waitForKeyPress():
-##    while True:
-##        event = pygame.event.wait()
-##        if event.type == pygame.QUIT:
-##            quitGraphics()
-##        elif event.type == pygame.KEYDOWN:
-##            return chr(event.key)
-##
-##def quitGraphics():
-##     pygame.quit()
-##     sys.exit()
-
-#########################################################
 #########################################################
 
 def makeColorsWebPage():
@@ -910,7 +845,7 @@ _GLI.loadKeys([
     (pygame.K_SPACE, ['space', ' ']),
     (pygame.K_RETURN, ['enter', 'return']),
     (pygame.K_TAB, ['tab']),
-    
+
     (pygame.K_a, ['a']),
     (pygame.K_b, ['b']),
     (pygame.K_c, ['c']),
@@ -1007,7 +942,7 @@ _GLI.loadKeys([
     (pygame.K_MENU, ['menu']),
     (pygame.K_POWER, ['power']),
     (pygame.K_EURO, ['euro']),
-    
+
     (pygame.K_KP0, ['keypad 0']),
     (pygame.K_KP1, ['keypad 1']),
     (pygame.K_KP2, ['keypad 2']),
@@ -1047,4 +982,3 @@ addGameControllerButtonPressedListener = onGameControllerButtonPress
 addGameControllerButtonReleasedListener = onGameControllerButtonRelease
 addTimerListener = onTimer
 keyPressedNow = isKeyPressed
-
