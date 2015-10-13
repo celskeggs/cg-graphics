@@ -9,7 +9,7 @@ see http://creativecommons.org/licenses/by-nc-sa/3.0/ for details
 
 print "using graphics.py library version 3.8"
 
-import pygame, os, math, colors, keys
+import pygame, os, math, colors, keys, joysticks
 
 
 class World:
@@ -23,50 +23,31 @@ class Point:
 
 
 class GameLibInfo:
-    def __init__(self):
-        self.initialize()
 
-    def initialize(self):
+    def __init__(self):
         self.world = None
         self.graphicsInited = False
-        self.fonts = dict()
-        self.eventListeners = dict()
         self.frameRate = 60
         self.windowWidth = 0
         self.windowHeight = 0
+        self.fonts = {}
+        self.eventListeners = {}
         self.background = (255, 255, 255)
         self.foreground = (0, 0, 0)
         self.nextEventType = pygame.USEREVENT
-        self.keysPressedNow = dict()
+        self.keysPressedNow = {}
         self.FPStime = 0
         self.FPSinterval = 0
         self.FPScount = 0
-        self.joysticks = []
-        self.joystickLabels = []  # list of dictionaries
-        self.numJoysticks = 0
-        self.joystickDeadZone = 0.05
-        self.joystickLabelDefault = [["X", "Y"]]
-        self.joystickLabelDefaults = {
-            "Logitech Dual Action": [["X", "Y"], ["LeftX", "LeftY", "RightX", "RightY"]],
-            "Logitech RumblePad 2 USB": [["X", "Y"], ["LeftX", "LeftY", "RightX", "RightY"]],
-            "Logitech Cordless RumblePad 2": [["X", "Y"], ["LeftX", "LeftY", "RightX", "RightY"]],
-            "Logitech Attack 3": [["X", "Y", "Throttle"]],
+        self.joyinfo = joysticks.JoysticksInfo()
 
-            "Logitech Logitech Dual Action": [["X", "Y"], ["LeftX", "LeftY", "RightX", "RightY"]],
-            "Logitech Logitech RumblePad 2 USB": [["X", "Y"], ["LeftX", "LeftY", "RightX", "RightY"]],
-            "Logitech Logitech Cordless RumblePad 2": [["X", "Y"], ["LeftX", "LeftY", "RightX", "RightY"]],
-            "Logitech Logitech Attack 3": [["X", "Y", "Throttle"]],
-
-            "Controller (Gamepad F310)": [["X", "Y"], ["LeftX", "LeftY", "Trigger", "RightY", "RightX"]],
-            "Controller (Wireless Gamepad F710)": [["X", "Y"], ["LeftX", "LeftY", "Trigger", "RightY", "RightX"]],
-
-            "Saitek Aviator Stick": [["X", "Y", "LeftThrottle", "Twist", "RightThrottle"]],
-            "Saitek AV8R Joystick": [["X", "Y", "Twist", "LeftThrottle", "RightThrottle"]],
-            "Saitek Pro Flight Throttle Quadrant": [["LeftThrottle", "CenterThrottle", "RightThrottle"]],
-
-            "XBOX 360 For Windows (Controller)": [["X", "Y"], ["LeftX", "LeftY", "Trigger", "RightY", "RightX"]]
-
-        }
+    def initGraphics(self):
+        if not self.graphicsInited:
+            os.environ['SDL_VIDEO_CENTERED'] = '1'
+            pygame.init()
+            self.initializeListeners()
+            self.joyinfo.initialize()
+            self.graphicsInited = True
 
     def initializeListeners(self):
         onAnyKeyPress(lambda world, key: 0)
@@ -80,23 +61,6 @@ class GameLibInfo:
         onGameControllerDPad(lambda world, device, pad, xvalue, yvalue: 0)
         onGameControllerButtonPress(lambda world, device, button: 0)
         onGameControllerButtonRelease(lambda world, device, button: 0)
-
-    def initializeJoysticks(self):
-        self.numJoysticks = pygame.joystick.get_count()
-        for id in range(self.numJoysticks):
-            self.joysticks.append(pygame.joystick.Joystick(id))
-            self.joystickLabels.append(dict())
-            self.joysticks[id].init()
-            stickname = self.joysticks[id].get_name()
-            if stickname in self.joystickLabelDefaults:
-                print "recognized a " + stickname
-                labelList = self.joystickLabelDefaults[stickname]
-            else:
-                print "unknown game controller: " + stickname
-                labelList = self.joystickLabelDefault
-            for labels in labelList:
-                gameControllerSetStickAxesNames(labels, id)
-            print "    with axes:", gameControllerGetStickAxesNames()
 
     def startGame(self):
         self.clock = pygame.time.Clock()
@@ -117,17 +81,8 @@ _GLI = GameLibInfo()
 
 
 def makeGraphicsWindow(width, height, fullscreen=False):
-    initGraphics()
+    _GLI.initGraphics()
     setGraphicsMode(width, height, fullscreen)
-
-
-def initGraphics():
-    os.environ['SDL_VIDEO_CENTERED'] = '1'
-    pygame.init()
-    _GLI.initialize()
-    _GLI.initializeListeners()
-    _GLI.initializeJoysticks()
-    _GLI.graphicsInited = True
 
 
 def endGraphics():
@@ -144,13 +99,13 @@ def setGraphicsMode(width, height, fullscreen=False):
 
 
 def getScreenSize():
-    initGraphics()
+    _GLI.initGraphics()
     info = pygame.display.Info()
     return (info.current_w, info.current_h)
 
 
 def getAllScreenSizes():
-    initGraphics()
+    _GLI.initGraphics()
     return pygame.display.list_modes()
 
 
@@ -478,91 +433,20 @@ def sameKeys(key1, key2):
 
 #########################################################
 
-def numGameControllers():
-    return _GLI.numJoysticks
+numGameControllers = _GLI.joyinfo.getJoystickCount
+gameControllerSetDeadZone = _GLI.joyinfo.setDeadzone
 
+gameControllerNumStickAxes = _GLI.joyinfo.getAxisCount
+gameControllerGetStickAxesNames = _GLI.joyinfo.getAxisNames
+gameControllerSetStickAxesNames = _GLI.joyinfo.setAxisNames
+gameControllerStickAxis = _GLI.joyinfo.getAxis
 
-def gameControllerNumStickAxes(device=0):
-    if device < _GLI.numJoysticks:
-        return _GLI.joysticks[device].get_numaxes()
-    else:
-        return 0
+gameControllerNumButtons = _GLI.joyinfo.getButtonCount
+gameControllerButton = _GLI.joyinfo.getButton
 
-
-def gameControllerNumDPads(device=0):
-    if device < _GLI.numJoysticks:
-        return _GLI.joysticks[device].get_numhats()
-    else:
-        return 0
-
-
-def gameControllerNumButtons(device=0):
-    if device < _GLI.numJoysticks:
-        return _GLI.joysticks[device].get_numbuttons()
-    else:
-        return 0
-
-
-def gameControllerSetDeadZone(deadzone):
-    _GLI.joystickDeadZone = deadzone
-
-
-def gameControllerGetStickAxesNames(device=0):
-    if device < _GLI.numJoysticks:
-        labelDict = _GLI.joystickLabels[device]
-        axes = labelDict.keys()
-        axes.sort(key=lambda axis: labelDict[axis])
-        return axes
-    return []
-
-
-def gameControllerStickAxis(axis, device=0):
-    if device < _GLI.numJoysticks:
-        joystick = _GLI.joysticks[device]
-        labelDict = _GLI.joystickLabels[device]
-        if axis in labelDict:
-            axis = labelDict[axis]
-        if axis < joystick.get_numaxes():
-            value = joystick.get_axis(axis)
-            if abs(value) > _GLI.joystickDeadZone:
-                return value
-    return 0
-
-
-def gameControllerSetStickAxesNames(axesList, device=0):
-    if device < _GLI.numJoysticks:
-        labelDict = _GLI.joystickLabels[device]
-        for i in range(len(axesList)):
-            labelDict[axesList[i]] = i
-
-
-def gameControllerButton(button, device=0):
-    if device < _GLI.numJoysticks:
-        joystick = _GLI.joysticks[device]
-        button -= 1
-        if button >= 0 and button < joystick.get_numbuttons():
-            value = joystick.get_button(button)
-            return (value == 1)
-    return False
-
-
-def gameControllerDPadX(dpad=0, device=0):
-    if device < _GLI.numJoysticks:
-        joystick = _GLI.joysticks[device]
-        if dpad < joystick.get_numhats():
-            (dx, dy) = joystick.get_hat(dpad)
-            return dx
-    return 0
-
-
-def gameControllerDPadY(dpad=0, device=0):
-    if device < _GLI.numJoysticks:
-        joystick = _GLI.joysticks[device]
-        if dpad < joystick.get_numhats():
-            (dx, dy) = joystick.get_hat(dpad)
-            return dy
-    return 0
-
+gameControllerNumDPads = _GLI.joyinfo.getDPadCount
+gameControllerDPadX = _GLI.joyinfo.getDPadX
+gameControllerDPadY = _GLI.joyinfo.getDPadY
 
 #########################################################
 # Math functions
@@ -662,10 +546,7 @@ def runGraphics(startFunction, updateFunction, drawFunction):
                         _GLI.eventListeners["mousemotion"](_GLI.world, event.pos[0], event.pos[1], event.rel[0],
                                                            event.rel[1], button1, button2, button3)
                 elif event.type == pygame.JOYAXISMOTION:
-                    if abs(event.value) < _GLI.joystickDeadZone:
-                        joystickValue = 0
-                    else:
-                        joystickValue = event.value
+                    joystickValue = _GLI.joyinfo.applyDeadzone(event.value)
                     _GLI.eventListeners["stickmotion"](_GLI.world, event.joy, event.axis, joystickValue)
                 elif event.type == pygame.JOYHATMOTION:
                     _GLI.eventListeners["dpadmotion"](_GLI.world, event.joy, event.hat, event.value[0], event.value[1])
