@@ -1,4 +1,4 @@
-import pygame
+import pygame, events
 
 joystickLabels = {
     "Logitech Dual Action": [["X", "Y"], ["LeftX", "LeftY", "RightX", "RightY"]],
@@ -31,6 +31,7 @@ class JoysticksInfo:
         self.joystickDeadZone = 0.05
 
     def initialize(self):
+        events.handler(pygame.JOYAXISMOTION, self.joystick_axis_motion)
         for i in range(pygame.joystick.get_count()):
             self.joysticks.append(pygame.joystick.Joystick(i))
             self.joystickLabels.append({})
@@ -124,3 +125,22 @@ class JoysticksInfo:
             return 0
         else:
             return value
+
+    def joystick_axis_motion(self, event, _GLI):
+        joystickValue = self.applyDeadzone(event.value)
+        _GLI.eventListeners["stickmotion"](_GLI.world, event.joy, event.axis, joystickValue)
+
+
+@events.handler(pygame.JOYHATMOTION)
+def joystick_hat(event, _GLI):
+    _GLI.eventListeners["dpadmotion"](_GLI.world, event.joy, event.hat, event.value[0], event.value[1])
+
+
+@events.handler(pygame.JOYBUTTONUP)
+def joystick_button_up(event, _GLI):
+    _GLI.eventListeners["joybuttonup"](_GLI.world, event.joy, event.button + 1)
+
+
+@events.handler(pygame.JOYBUTTONDOWN)
+def joystick_button_down(event, _GLI):
+    _GLI.eventListeners["joybuttondown"](_GLI.world, event.joy, event.button + 1)

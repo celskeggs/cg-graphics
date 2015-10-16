@@ -60,6 +60,17 @@ class GameLibInfo:
         self.keepRunning = True
 
 
+@events.handler(pygame.QUIT)
+def quit(event, _):
+    _GLI.keepRunning = False
+
+
+@events.handler(pygame.KEYDOWN)
+def key_down(event, _):
+    if event.key == pygame.K_ESCAPE:
+        _GLI.keepRunning = False
+
+
 _GLI = GameLibInfo()
 
 
