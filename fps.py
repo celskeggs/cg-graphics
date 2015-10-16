@@ -10,7 +10,6 @@ class GameClock:
         self.targetFPS = 60
 
     def maybePrintFPS(self):
-        self.FPScount += 1
         if self.displayInterval > 0:
             time = pygame.time.get_ticks()
             if time > self.lastDisplayedAt + self.displayInterval:

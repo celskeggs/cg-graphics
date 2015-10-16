@@ -8,7 +8,7 @@ This code is licensed under the Creative Commons Attribution-NonCommercial-Share
 see http://creativecommons.org/licenses/by-nc-sa/3.0/ for details
 """
 
-print "using graphics.py library version 4.0"
+print("using graphics.py library version 4.0")
 
 import pygame, colors, keys, joysticks, fps, display, audio, gmath, image, keyboard, events, mouse, timers
 
@@ -90,9 +90,6 @@ class GameLibInfo:
 
 _GLI = GameLibInfo()
 
-animate = _GLI.animate
-runGraphics = _GLI.runGraphics
-
 
 def makeGraphicsWindow(width, height, fullscreen=False):
     _GLI.initGraphics()
@@ -109,8 +106,27 @@ def getAllScreenSizes():
     return _GLI.display.getAllScreenSizes()
 
 
-getActualFrameRate = _GLI.fps.getActualFPS
-displayFPS = _GLI.fps.display
+# _GLI
+
+animate = _GLI.animate
+runGraphics = _GLI.runGraphics
+getWorld = _GLI.getWorld
+
+# audio
+
+loadSound = audio.loadSound
+playSound = audio.playSound
+stopSound = audio.stopSound
+loadMusic = audio.loadMusic
+playMusic = audio.playMusic
+stopMusic = audio.stopMusic
+
+# colors
+
+lookupColor = colors.lookupColor
+getColorsList = colors.getColorsList
+
+# display
 
 setBackground = _GLI.display.setBackground
 setForeground = _GLI.display.setForeground
@@ -122,9 +138,6 @@ setWindowTitle = _GLI.display.setWindowTitle
 
 saveScreen = _GLI.display.saveScreen
 getScreenPixel = _GLI.display.getScreenPixel
-
-lookupColor = colors.lookupColor
-getColorsList = colors.getColorsList
 
 drawPixel = _GLI.display.drawPixel
 drawLine = _GLI.display.drawLine
@@ -140,6 +153,22 @@ sizeString = _GLI.display.sizeString
 drawString = _GLI.display.drawString
 getFontList = _GLI.display.getFontList
 
+# fps
+
+getActualFrameRate = _GLI.fps.getActualFPS
+displayFPS = _GLI.fps.displayFPS
+getElapsedTime = _GLI.fps.getElapsedTime
+resetTime = _GLI.fps.resetTime
+setFrameRate = _GLI.fps.setTargetFPS
+
+# gmath
+
+polarToCartesian = gmath.polarToCartesian
+cartesianToPolarAngle = gmath.cartesianToPolarAngle
+pointInPolygon = gmath.pointInPolygon
+
+# image
+
 loadImage = image.loadImage
 saveImage = image.saveImage
 getImageWidth = image.getImageWidth
@@ -147,42 +176,12 @@ getImageHeight = image.getImageHeight
 getImagePixel = image.getImagePixel
 getImageRegion = image.getImageRegion
 
-loadSound = audio.loadSound
-playSound = audio.playSound
-stopSound = audio.stopSound
-loadMusic = audio.loadMusic
-playMusic = audio.playMusic
-stopMusic = audio.stopMusic
-
-onKeyPress = keyboard.onKeyPress
-onAnyKeyPress = keyboard.onAnyKeyPress
-onKeyRelease = keyboard.onKeyRelease
-onAnyKeyRelease = keyboard.onAnyKeyRelease
-
-onMousePress = mouse.onMousePress
-onMouseRelease = mouse.onMouseRelease
-onWheelForward = mouse.onWheelForward
-onWheelBackward = mouse.onWheelBackward
-onMouseMotion = mouse.onMouseMotion
+# joysticks
 
 onGameControllerStick = _GLI.joyinfo.onGameControllerStick
 onGameControllerDPad = _GLI.joyinfo.onGameControllerDPad
 onGameControllerButtonPress = _GLI.joyinfo.onGameControllerButtonPress
 onGameControllerButtonRelease = _GLI.joyinfo.onGameControllerButtonRelease
-
-onTimer = _GLI.timers.onTimer
-
-getMousePosition = keyboard.getMousePosition
-getMouseButton = keyboard.getMouseButton
-hideMouse = keyboard.hideMouse
-showMouse = keyboard.showMouse
-moveMouse = keyboard.moveMouse
-
-isKeyPressed = _GLI.keys.isKeyPressed
-
-getKeyName = keys.getKeyName
-getKeyCode = keys.getKeyCode
-sameKeys = keys.sameKeys
 
 numGameControllers = _GLI.joyinfo.getJoystickCount
 gameControllerSetDeadZone = _GLI.joyinfo.setDeadzone
@@ -199,14 +198,39 @@ gameControllerNumDPads = _GLI.joyinfo.getDPadCount
 gameControllerDPadX = _GLI.joyinfo.getDPadX
 gameControllerDPadY = _GLI.joyinfo.getDPadY
 
-polarToCartesian = gmath.polarToCartesian
-cartesianToPolarAngle = gmath.cartesianToPolarAngle
-pointInPolygon = gmath.pointInPolygon
+# keyboard
+
+onKeyPress = keyboard.onKeyPress
+onAnyKeyPress = keyboard.onAnyKeyPress
+onKeyRelease = keyboard.onKeyRelease
+onAnyKeyRelease = keyboard.onAnyKeyRelease
+
+isKeyPressed = _GLI.keys.isKeyPressed
+
+# keys
+
+getKeyName = keys.getKeyName
+getKeyCode = keys.getKeyCode
+sameKeys = keys.sameKeys
+
+# mouse
+
+getMousePosition = mouse.getMousePosition
+getMouseButton = mouse.getMouseButton
+hideMouse = mouse.hideMouse
+showMouse = mouse.showMouse
+moveMouse = mouse.moveMouse
+
+onMousePress = mouse.onMousePress
+onMouseRelease = mouse.onMouseRelease
+onWheelForward = mouse.onWheelForward
+onWheelBackward = mouse.onWheelBackward
+onMouseMotion = mouse.onMouseMotion
+
+# timers
+
+onTimer = _GLI.timers.onTimer
+
+# events
 
 endGraphics = _GLI.eventloop.stop
-
-getWorld = _GLI.getWorld
-
-getElapsedTime = _GLI.fps.getElapsedTime
-resetTime = _GLI.fps.resetTime
-setFrameRate = _GLI.fps.setTargetFPS
