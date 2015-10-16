@@ -24,38 +24,64 @@ def onTimer(listenerFunction, interval):
 class GameClock:
     def __init__(self):
         self.startGameAt = None
+
         self.lastDisplayedAt = 0
         self.displayInterval = 0
-        self.clock = None
+
+        self.lastFrameAt = 0
+
+        self.lastFPSAt = 0
+        self.frameCount = 0
+        self.actualFPS = 0
+
         self.targetFPS = 60
 
-    def maybePrintFPS(self):
+    def maybePrintFPS(self, time):
         if self.displayInterval > 0:
-            time = pygame.time.get_ticks()
             if time > self.lastDisplayedAt + self.displayInterval:
                 print self.getActualFPS()
                 self.lastDisplayedAt = time
 
+    def updateFPS(self, time):
+        self.frameCount += 1
+        if self.frameCount >= 10:
+            self.actualFPS = self.frameCount / (time - self.lastFPSAt)
+            self.lastFPSAt = time
+            self.frameCount = 0
+
+    def tickDelay(self, time):
+        target_delay = 1000.0 / self.targetFPS
+        target_time = self.lastFrameAt + target_delay
+        real_delay = target_time - time
+        if real_delay > 0:
+            sdl2.SDL_Delay(real_delay)
+        else:
+            # couldn't keep up!
+            pass
+        self.lastFrameAt = time
+
     def displayFPS(self, interval):
         self.displayInterval = interval * 1000
-        self.lastDisplayedAt = pygame.time.get_ticks()
+        self.lastDisplayedAt = sdl2.SDL_GetTicks()
 
     def getActualFPS(self):
-        return self.clock.get_fps()
+        return self.actualFPS
 
     def start(self):
-        self.clock = pygame.time.Clock()
-        self.startGameAt = pygame.time.get_ticks()
+        self.frameCount = self.actualFPS = 0
+        self.lastFPSAt = self.startGameAt = sdl2.SDL_GetTicks()
 
     def tick(self):
-        self.maybePrintFPS()
-        self.clock.tick(self.targetFPS)
+        time = sdl2.SDL_GetTicks()
+        self.updateFPS(time)
+        self.maybePrintFPS(time)
+        self.tickDelay(time)
 
     def setTargetFPS(self, frameRate):
         self.targetFPS = frameRate
 
     def getElapsedTime(self):
-        return pygame.time.get_ticks() - self.startGameAt
+        return sdl2.SDL_GetTicks() - self.startGameAt
 
     def resetTime(self):
-        self.startGameAt = pygame.time.get_ticks()
+        self.startGameAt = sdl2.SDL_GetTicks()

@@ -1,4 +1,4 @@
-import sdl2
+import sdl2, sdl2.sdlttf
 
 event_handlers = {}
 
@@ -14,8 +14,9 @@ class EventLoop:
         self.keepRunning = False
 
     def pump(self, world):
-        eventlist = pygame.event.get()
-        for event in eventlist:
+        # TODO: optimize eventloop to use more efficient functions like PeepEvents?
+        event = sdl2.SDL_Event()
+        while sdl2.SDL_PollEvent(event):
             for event_handler in event_handlers.get(event.type, ()):
                 event_handler(event, world)
                 if not self.keepRunning:
@@ -29,7 +30,9 @@ class EventLoop:
                 self.pump(world)
                 loopFunction()
         finally:
-            pygame.quit()  # TODO: do this differently?
+            # TODO: make these go in a more appropriate place?
+            sdl2.sdlttf.TTF_Quit()
+            sdl2.SDL_Quit()
 
 
 # so that we can use @decorators.

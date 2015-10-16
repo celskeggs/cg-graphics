@@ -1,5 +1,14 @@
 import sdl2, colors
 
+# TODO: make sure everything gets freed properly, in general
+class Image:
+    def get_texture(self):
+        pass
+    def get_surface(self):
+        pass
+    def get_size(self):
+        pass
+
 
 def loadImage(filename, transparentColor=None, rotate=0, scale=1, flipHorizontal=False, flipVertical=False):
     if transparentColor is None:
@@ -32,4 +41,6 @@ def getImageRegion(image, x, y, width, height):
 
 
 def saveImage(image, filename):
+    if isinstance(image, Image):
+        image = image.get_surface()
     pygame.image.save(image, filename)

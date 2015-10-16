@@ -1,4 +1,4 @@
-import sdl2, colors
+import sdl2, sdl2.sdlgfx, sdl2.sdlttf, colors, pygame_sysfont, image
 
 DEFAULT_BACKGROUND = (255, 255, 255)
 DEFAULT_FOREGROUND = (0, 0, 0)
@@ -15,6 +15,7 @@ class Display:
 
     def initialize(self):
         sdl2.SDL_SetHint(sdl2.SDL_HINT_RENDER_SCALE_QUALITY, "linear")
+        assert sdl2.sdlttf.TTF_Init() == 0, "Could not initialize TTF library: %s" % sdl2.SDL_GetError()
 
     def setGraphicsMode(self, width, height, fullscreen=False):
         self.windowWidth, self.windowHeight = width, height
@@ -41,40 +42,69 @@ class Display:
         sdl2.SDL_SetWindowTitle(self.window, str(title))
 
     def drawPixel(self, x, y, color=DEFAULT_FOREGROUND):
-        self.screen.set_at((int(x), int(y)), colors.lookupColor(color))
+        self.set_render_color(color)
+        assert sdl2.SDL_RenderDrawPoint(self.renderer, int(x), int(y)) == 0, \
+            "Could not draw pixel: 5s" % sdl2.SDL_GetError()
 
     def getScreenPixel(self, x, y):
         if 0 <= x < self.windowWidth and 0 <= y < self.windowHeight:
-            return self.screen.get_at((int(x), int(y)))
+            out = [0, 0, 0, 17, 17, 17]
+            # TODO: make sure this actually works like this
+            assert sdl2.SDL_RenderReadPixels(self.renderer, sdl2.SDL_Rect(x, y, 1, 1), sdl2.SDL_PIXELFORMAT_RGB888, out,
+                                             3) == 0, "Could not read screen pixel: %s" % sdl2.SDL_GetError()
+            assert out[3:] == [17, 17, 17]  # TEMPORARY TO MAKE SURE THAT MEMORY ISN'T OVERWRITTEN
+            return out[0], out[1], out[2]
         else:
             return None
 
     def drawLine(self, x1, y1, x2, y2, color=DEFAULT_FOREGROUND, thickness=1):
-        pygame.draw.line(self.screen, colors.lookupColor(color), (int(x1), int(y1)), (int(x2), int(y2)), int(thickness))
+        assert int(thickness) >= 1, "invalid thickness - gfx will fail"
+        r, g, b = colors.lookupColor(color)
+        assert sdl2.sdlgfx.thickLineRGBA(self.renderer, int(x1), int(y1), int(x2), int(y2), int(thickness), int(r),
+                                         int(g), int(b), 255) == 0, "Could not draw line: %s" % sdl2.SDL_GetError()
 
     def drawCircle(self, x, y, radius, color=DEFAULT_FOREGROUND, thickness=1):
-        pygame.draw.circle(self.screen, colors.lookupColor(color), (int(x), int(y)), int(radius), int(thickness))
+        self.drawEllipse(x, y, radius, radius, color, thickness)
 
     def fillCircle(self, x, y, radius, color=DEFAULT_FOREGROUND):
         self.drawCircle(x, y, radius, color, 0)
 
     def drawEllipse(self, x, y, width, height, color=DEFAULT_FOREGROUND, thickness=1):
-        pygame.draw.ellipse(self.screen, colors.lookupColor(color),
-                            pygame.Rect(int(x - width / 2), int(y - height / 2), int(width), int(height)),
-                            int(thickness))
+        thickness = int(thickness)
+        r, g, b = colors.lookupColor(color)
+        if thickness <= 0:
+            assert sdl2.sdlgfx.filledEllipseRGBA(self.renderer, int(x), int(y), int(width / 2), int(height / 2), int(r),
+                                                 int(g), int(b), 255) == 0, \
+                "Could not fill ellipse: %s" % sdl2.SDL_GetError()
+        else:
+            # what on earth was pygame doing???
+            for loop in range(thickness):
+                assert sdl2.sdlgfx.filledCircleRGBA(self.renderer, int(x), int(y), int(width / 2) - loop,
+                                                    int(height / 2) - loop, int(r), int(g), int(b), 255) == 0, \
+                    "Could not fill ellipse: %s" % sdl2.SDL_GetError()
 
     def fillEllipse(self, x, y, width, height, color=DEFAULT_FOREGROUND):
         self.drawEllipse(x, y, width, height, color, 0)
 
     def drawRectangle(self, x, y, width, height, color=DEFAULT_FOREGROUND, thickness=1):
-        pygame.draw.rect(self.screen, colors.lookupColor(color), pygame.Rect(int(x), int(y), int(width), int(height)),
-                         int(thickness))
+        self.drawPolygon(((x, y), (x + width - 1, y), (x, y + height - 1), (x + width - 1, y + height - 1)), color,
+                         thickness)
 
     def fillRectangle(self, x, y, width, height, color=DEFAULT_FOREGROUND):
         self.drawRectangle(x, y, width, height, color, 0)
 
     def drawPolygon(self, pointlist, color=DEFAULT_FOREGROUND, thickness=1):
-        pygame.draw.polygon(self.screen, colors.lookupColor(color), pointlist, int(thickness))
+        thickness = int(thickness)
+        if thickness <= 0:
+            for i, (x1, y1) in range(len(pointlist)):
+                x2, y2 = pointlist[(i + 1) % len(pointlist)]
+                self.drawLine(x1, y1, x2, y2, color, thickness)
+        else:
+            r, g, b = colors.lookupColor(color)
+            xes = [int(x) for x, y in pointlist]
+            yes = [int(y) for x, y in pointlist]
+            assert sdl2.sdlgfx.filledPolygonRGBA(self.renderer, xes, yes, len(pointlist), int(r), int(g), int(b),
+                                                 255) == 0, "Could not fill polygon: %s" % sdl2.SDL_GetError()
 
     def fillPolygon(self, pointlist, color=DEFAULT_FOREGROUND):
         self.drawPolygon(pointlist, color, 0)
@@ -83,30 +113,59 @@ class Display:
     def getCachedFont(self, bold, font, italic, size):
         fontSignature = (font, size, bold, italic)
         if fontSignature not in self.fonts:
-            self.fonts[fontSignature] = pygame.font.SysFont(font, size, bold, italic)
+            fontpath, size, bold, italic = pygame_sysfont.lookup_sys(font, size, bold, italic)
+            font = sdl2.sdlttf.TTF_OpenFont(fontpath, size)
+            assert font is not None, "Could not open font: %s" % sdl2.SDL_GetError()
+            style = sdl2.sdlttf.TTF_STYLE_NORMAL
+            if bold:
+                style |= sdl2.sdlttf.TTF_STYLE_BOLD
+            if italic:
+                style |= sdl2.sdlttf.TTF_STYLE_ITALIC
+            sdl2.sdlttf.TTF_SetFontStyle(font, style)
+            self.fonts[fontSignature] = font
         return self.fonts[fontSignature]
 
     def sizeString(self, text, size=30, bold=False, italic=False, font=None):
         font = self.getCachedFont(bold, font, italic, size)
-        textimage = font.render(str(text), False, (1, 1, 1))
-        return textimage.get_width(), textimage.get_height()
+        w = [-1]
+        h = [-1]
+        assert sdl2.sdlttf.TTF_SizeUTF8(font, str(text).encode("utf-8"), w, h) == 0, \
+            "Could not find size of text: %s" % sdl2.SDL_GetError()
+        assert w[0] != -1 and h[0] != -1
+        return w[0], h[0]
 
     def drawString(self, text, x, y, size=30, color=DEFAULT_FOREGROUND, bold=False, italic=False, font=None):
         color = colors.lookupColor(color)
         font = self.getCachedFont(bold, font, italic, size)
-        textimage = font.render(str(text), False, color)
-        self.screen.blit(textimage, (int(x), int(y)))
-        return textimage.get_width(), textimage.get_height()
+        textimage = sdl2.sdlttf.TTF_RenderUTF8_Solid(font, str(text).encode("utf-8"), color)
+        assert textimage is not None, "Could not render font: %s" % sdl2.SDL_GetError()
+        try:
+            texture = sdl2.SDL_CreateTextureFromSurface(self.renderer, textimage)
+            assert texture is not None, "Could not convert surface: %s" % sdl2.SDL_GetError()
+            try:
+                target_rect = sdl2.SDL_Rect(int(x), int(y), textimage.w, textimage.h)
+                assert sdl2.SDL_RenderCopy(self.renderer, texture, None, target_rect) == 0, \
+                    "Could not render text: %s" % sdl2.SDL_GetError()
+                return textimage.w, textimage.h
+            finally:
+                sdl2.SDL_DestroyTexture(textimage)
+        finally:
+            sdl2.SDL_FreeSurface(textimage)
 
     def drawImage(self, image, x, y, rotate=0, scale=1, flipHorizontal=False, flipVertical=False):
-        if flipHorizontal or flipVertical:
-            image = pygame.transform.flip(image, flipHorizontal, flipVertical)
-        if rotate != 0 or scale != 1:
-            image = pygame.transform.rotozoom(image, rotate, scale)
-        self.screen.blit(image, (int(x - image.get_width() / 2), int(y - image.get_height() / 2)))
+        w, h = image.get_size()
+        w *= scale
+        h *= scale
+        target_rect = sdl2.SDL_Rect(int(x - w / 2), int(y - h / 2), int(w), int(h))
+        flags = sdl2.SDL_FLIP_NONE
+        if flipHorizontal:
+            flags |= sdl2.SDL_FLIP_HORIZONTAL
+        if flipVertical:
+            flags |= sdl2.SDL_FLIP_VERTICAL
+        assert sdl2.SDL_RenderCopyEx(self.renderer, image.get_texture(), None, target_rect, rotate, None, flags)
 
     def getFontList(self):
-        return pygame.font.get_fonts()
+        return pygame_sysfont.get_fonts()
 
     def setBackground(self, background):
         self.background = colors.lookupColor(background)
@@ -120,20 +179,56 @@ class Display:
             assert sdl2.SDL_RenderCopy(self.renderer, self.background, None,
                                        None) == 0, "Could not render background: %s" % sdl2.SDL_GetError()
         elif self.background is not None:
-            r, g, b = self.background
-            assert sdl2.SDL_SetRenderDrawColor(self.renderer, r, g, b,
-                                               255) == 0, "Could not set render color: %s" % sdl2.SDL_GetError()
+            self.set_render_color(self.background)
             assert sdl2.SDL_RenderClear(self.renderer) == 0, "Could not set render color: %s" % sdl2.SDL_GetError()
 
+    def set_render_color(self, color):
+        r, g, b = color
+        assert sdl2.SDL_SetRenderDrawColor(self.renderer, r, g, b, 255) == 0, \
+            "Could not set render color: %s" % sdl2.SDL_GetError()
+
     def getAllScreenSizes(self):
-        return pygame.display.list_modes()
+        display_index = self.get_display_index()
+        mode_count = sdl2.SDL_GetNumDisplayModes(display_index)
+        assert mode_count >= 0, "Could not get display modes: %s" % sdl2.SDL_GetError()
+        modeinfo = sdl2.SDL_DisplayMode()
+        modes = []
+        for mode in range(mode_count):
+            assert sdl2.SDL_GetDisplayMode(display_index, mode, modeinfo) == 0, "Could not get display mode %d: %s" % (mode, sdl2.SDL_GetError())
+            modes.append((modeinfo.w, modeinfo.h))
+        return modes
+
+    def get_display_index(self):
+        # we need a window because we don't know the correct display index
+        if self.window is None:
+            hidden_window = sdl2.SDL_CreateWindow("This window should not be visible", sdl2.SDL_WINDOWPOS_CENTERED,
+                                                  sdl2.SDL_WINDOWPOS_CENTERED, 64, 64, sdl2.SDL_WINDOW_HIDDEN)
+            assert hidden_window is not None, "Could not create window for screen size querying: %s" % sdl2.SDL_GetError()
+            try:
+                display_index = sdl2.SDL_GetWindowDisplayIndex(hidden_window)
+            finally:
+                sdl2.SDL_DestroyWindow(hidden_window)
+        else:
+            display_index = sdl2.SDL_GetWindowDisplayIndex(self.window)
+        assert display_index >= 0, "Could not get default display index: %s" % sdl2.SDL_GetError()
+        return display_index
 
     def getScreenSize(self):
-        info = pygame.display.Info()
-        return info.current_w, info.current_h
+        display_index = self.get_display_index()
+        modeinfo = sdl2.SDL_DisplayMode()
+        sdl2.SDL_GetCurrentDisplayMode(display_index, modeinfo)
+        return modeinfo.w, modeinfo.h
 
     def saveScreen(self, filename):
-        pygame.image.save(self.screen, filename)
+        render_target = sdl2.SDL_CreateRGBSurface(0, self.windowWidth, self.windowHeight, 32,
+                                                  0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000)
+        assert render_target is not None, "Could not create RGB surface for screenshot: %s" % sdl2.SDL_GetError()
+        try:
+            assert sdl2.SDL_RenderReadPixels(self.renderer, None, sdl2.SDL_PIXELFORMAT_ARGB8888, render_target.pixels,
+                                             render_target.pitch) == 0, "Could not read screenshot: %s" % sdl2.SDL_GetError()
+            image.saveImage(render_target, filename)
+        finally:
+            sdl2.SDL_FreeSurface(render_target)
 
     def renderWithFunction(self, renderer):
         self.drawBackground()
