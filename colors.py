@@ -154,6 +154,12 @@ for name, red, green, blue, hexcolor in colorList:
 colorNames = [name for name, red, green, blue, hexcolor in colorList]
 colorTable = dict((name, (red, green, blue)) for name, red, green, blue, hexcolor in colorList)
 
+def lookupColor(color):
+    return colorTable.get(color, color)
+
+def getColorsList():
+    return colorNames
+
 if __name__ == "__main__":
     with open("colors.html", "w") as web:
         web.write(

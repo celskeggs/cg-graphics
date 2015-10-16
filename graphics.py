@@ -123,12 +123,8 @@ def setWindowTitle(title):
     pygame.display.set_caption(str(title))
 
 
-def lookupColor(color):
-    return colors.colorTable.get(color, color)
-
-
-def getColorsList():
-    return colors.colorNames
+lookupColor = colors.lookupColor
+getColorsList = colors.getColorsList
 
 
 ###################################################################
@@ -555,24 +551,3 @@ def getWorld():
 getElapsedTime = _GLI.fps.getElapsedTime
 resetTime = _GLI.fps.resetTime
 setFrameRate = _GLI.fps.setTargetFPS
-
-###################################################################
-# Backward Compatibility
-
-addKeyDownListener = onKeyPress
-addKeyUpListener = onKeyRelease
-addMouseDownListener = onMousePress
-addMouseUpListener = onMouseRelease
-addKeyPressedListener = onKeyPress
-addKeyReleasedListener = onKeyRelease
-addMousePressedListener = onMousePress
-addMouseReleasedListener = onMouseRelease
-addWheelForwardListener = onWheelForward
-addWheelBackwardListener = onWheelBackward
-addMouseMotionListener = onMouseMotion
-addGameControllerStickListener = onGameControllerStick
-addGameControllerDPadListener = onGameControllerDPad
-addGameControllerButtonPressedListener = onGameControllerButtonPress
-addGameControllerButtonReleasedListener = onGameControllerButtonRelease
-addTimerListener = onTimer
-keyPressedNow = isKeyPressed
