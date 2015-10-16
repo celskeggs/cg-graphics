@@ -9,7 +9,7 @@ see http://creativecommons.org/licenses/by-nc-sa/3.0/ for details
 
 print "using graphics.py library version 3.8"
 
-import pygame, colors, keys, joysticks, fps, display, audio, gmath, image, input, events
+import pygame, colors, keys, joysticks, fps, display, audio, gmath, image, keyboard, events
 
 
 class World:
@@ -27,7 +27,7 @@ class GameLibInfo:
         self.world = None
         self.display = display.Display()
         self.joyinfo = joysticks.JoysticksInfo()
-        self.keys = input.Keys()
+        self.keys = keyboard.Keys()
         self.fps = fps.GameClock()
 
         self.graphicsInited = False
@@ -40,6 +40,7 @@ class GameLibInfo:
             self.display.initialize()
             self.initializeListeners()
             self.joyinfo.initialize()
+            self.keys.initialize()
             self.graphicsInited = True
 
     def initializeListeners(self):
@@ -137,26 +138,11 @@ stopMusic = audio.stopMusic
 
 #########################################################
 
-def onKeyPress(listenerFunction, key):
-    key = getKeyCode(key)
-    if key is None:
-        raise Exception("that is not a valid key")
-    _GLI.eventListeners[("keydown", key)] = listenerFunction
 
-
-def onAnyKeyPress(listenerFunction):
-    _GLI.eventListeners["keydown"] = listenerFunction
-
-
-def onKeyRelease(listenerFunction, key):
-    key = getKeyCode(key)
-    if key == None:
-        raise Exception("that is not a valid key")
-    _GLI.eventListeners[("keyup", key)] = listenerFunction
-
-
-def onAnyKeyRelease(listenerFunction):
-    _GLI.eventListeners["keyup"] = listenerFunction
+onKeyPress = keyboard.onKeyPress
+onAnyKeyPress = keyboard.onAnyKeyPress
+onKeyRelease = keyboard.onKeyRelease
+onAnyKeyRelease = keyboard.onAnyKeyRelease
 
 
 def onMousePress(listenerFunction):
@@ -179,20 +165,10 @@ def onMouseMotion(listenerFunction):
     _GLI.eventListeners["mousemotion"] = listenerFunction
 
 
-def onGameControllerStick(listenerFunction):
-    _GLI.eventListeners["stickmotion"] = listenerFunction
-
-
-def onGameControllerDPad(listenerFunction):
-    _GLI.eventListeners["dpadmotion"] = listenerFunction
-
-
-def onGameControllerButtonPress(listenerFunction):
-    _GLI.eventListeners["joybuttondown"] = listenerFunction
-
-
-def onGameControllerButtonRelease(listenerFunction):
-    _GLI.eventListeners["joybuttonup"] = listenerFunction
+onGameControllerStick = _GLI.joyinfo.onGameControllerStick
+onGameControllerDPad = _GLI.joyinfo.onGameControllerDPad
+onGameControllerButtonPress = _GLI.joyinfo.onGameControllerButtonPress
+onGameControllerButtonRelease = _GLI.joyinfo.onGameControllerButtonRelease
 
 
 def onTimer(listenerFunction, interval):
@@ -205,11 +181,11 @@ def onTimer(listenerFunction, interval):
 
 #########################################################
 
-getMousePosition = input.getMousePosition
-getMouseButton = input.getMouseButton
-hideMouse = input.hideMouse
-showMouse = input.showMouse
-moveMouse = input.moveMouse
+getMousePosition = keyboard.getMousePosition
+getMouseButton = keyboard.getMouseButton
+hideMouse = keyboard.hideMouse
+showMouse = keyboard.showMouse
+moveMouse = keyboard.moveMouse
 
 isKeyPressed = _GLI.keys.isKeyPressed
 

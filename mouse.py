@@ -1,4 +1,4 @@
-import pygame, keys, events
+import pygame, events
 
 
 def getMousePosition():
@@ -19,37 +19,6 @@ def showMouse():
 
 def moveMouse(x, y):
     pygame.mouse.set_pos((int(x), int(y)))
-
-
-class Keys:
-    def __init__(self):
-        self.keysPressedNow = {}
-
-    def isKeyPressed(self, key):
-        return self.keysPressedNow.get(keys.getKeyCode(key), False)
-
-    def pressKey(self, key):
-        self.keysPressedNow[key] = True
-
-    def releaseKey(self, key):
-        self.keysPressedNow[key] = False
-
-@events.handler(pygame.KEYDOWN)
-def key_down(event, _GLI):
-    _GLI.keys.pressKey(event.key)
-    if ("keydown", event.key) in _GLI.eventListeners:
-        _GLI.eventListeners[("keydown", event.key)](_GLI.world)
-    else:
-        _GLI.eventListeners["keydown"](_GLI.world, event.key)
-
-
-@events.handler(pygame.KEYUP)
-def key_down(event, _GLI):
-    _GLI.keys.releaseKey(event.key)
-    if ("keyup", event.key) in _GLI.eventListeners:
-        _GLI.eventListeners[("keyup", event.key)](_GLI.world)
-    else:
-        _GLI.eventListeners["keyup"](_GLI.world, event.key)
 
 
 @events.handler(pygame.MOUSEBUTTONDOWN)

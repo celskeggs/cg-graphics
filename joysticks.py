@@ -31,7 +31,6 @@ class JoysticksInfo:
         self.joystickDeadZone = 0.05
 
     def initialize(self):
-        events.handler(pygame.JOYAXISMOTION, self.joystick_axis_motion)
         for i in range(pygame.joystick.get_count()):
             self.joysticks.append(pygame.joystick.Joystick(i))
             self.joystickLabels.append({})
@@ -126,21 +125,26 @@ class JoysticksInfo:
         else:
             return value
 
-    def joystick_axis_motion(self, event, _GLI):
-        joystickValue = self.applyDeadzone(event.value)
-        _GLI.eventListeners["stickmotion"](_GLI.world, event.joy, event.axis, joystickValue)
+    def onGameControllerStick(self, listenerFunction):
+        def joystick_motion_handler(event, _GLI):
+            listenerFunction(_GLI.world, event.joy, event.axis, self.applyDeadzone(event.value))
 
+        events.handler(pygame.JOYAXISMOTION, joystick_motion_handler)
 
-@events.handler(pygame.JOYHATMOTION)
-def joystick_hat(event, _GLI):
-    _GLI.eventListeners["dpadmotion"](_GLI.world, event.joy, event.hat, event.value[0], event.value[1])
+    def onGameControllerDPad(self, listenerFunction):
+        def dpad_motion_handler(event, _GLI):
+            listenerFunction(_GLI.world, event.joy, event.hat, event.value[0], event.value[1])
 
+        events.handler(pygame.JOYHATMOTION, dpad_motion_handler)
 
-@events.handler(pygame.JOYBUTTONUP)
-def joystick_button_up(event, _GLI):
-    _GLI.eventListeners["joybuttonup"](_GLI.world, event.joy, event.button + 1)
+    def onGameControllerButtonPress(self, listenerFunction):
+        def joystick_button_press_handler(event, _GLI):
+            listenerFunction(_GLI.world, event.joy, event.button + 1)
 
+        events.handler(pygame.JOYBUTTONDOWN, joystick_button_press_handler)
 
-@events.handler(pygame.JOYBUTTONDOWN)
-def joystick_button_down(event, _GLI):
-    _GLI.eventListeners["joybuttondown"](_GLI.world, event.joy, event.button + 1)
+    def onGameControllerButtonRelease(self, listenerFunction):
+        def joystick_button_release_handler(event, _GLI):
+            listenerFunction(_GLI.world, event.joy, event.button + 1)
+
+        events.handler(pygame.JOYBUTTONUP, joystick_button_release_handler)
