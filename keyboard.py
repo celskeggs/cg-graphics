@@ -13,10 +13,10 @@ class Keys:
         return self.keysPressedNow.get(keys.getKeyCode(key), False)
 
     def onPress(self, event, world):
-        self.keysPressedNow[event.key] = True
+        self.keysPressedNow[event.key.keysym.scancode] = True
 
     def onRelease(self, event, world):
-        self.keysPressedNow[event.key] = False
+        self.keysPressedNow[event.key.keysym.scancode] = False
 
 
 def onKeyPress(listenerFunction, key):
@@ -25,7 +25,7 @@ def onKeyPress(listenerFunction, key):
         raise Exception("that is not a valid key")
 
     def key_press_handler(event, world):
-        if event.key == key:
+        if event.key.keysym.scancode == key:
             listenerFunction(world)
 
     events.handler(sdl2.SDL_KEYDOWN, key_press_handler)
@@ -33,7 +33,7 @@ def onKeyPress(listenerFunction, key):
 
 def onAnyKeyPress(listenerFunction):
     def any_key_press_handler(event, world):
-        listenerFunction(world, event.key)
+        listenerFunction(world, event.key.keysym.scancode)
 
     events.handler(sdl2.SDL_KEYDOWN, any_key_press_handler)
 
@@ -44,7 +44,7 @@ def onKeyRelease(listenerFunction, key):
         raise Exception("that is not a valid key")
 
     def key_release_handler(event, world):
-        if event.key == key:
+        if event.key.keysym.scancode == key:
             listenerFunction(world)
 
     events.handler(sdl2.SDL_KEYUP, key_release_handler)
@@ -52,6 +52,6 @@ def onKeyRelease(listenerFunction, key):
 
 def onAnyKeyRelease(listenerFunction):
     def any_key_release_handler(event, world):
-        listenerFunction(world, event.key)
+        listenerFunction(world, event.key.keysym.scancode)
 
     events.handler(sdl2.SDL_KEYUP, any_key_release_handler)

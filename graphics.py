@@ -40,12 +40,15 @@ class GameLibInfo:
             self.display.initialize()
             self.joyinfo.initialize()
             self.keys.initialize()
-            events.handler(sdl2.SDL_QUIT, self.eventloop.stop)
+            events.handler(sdl2.SDL_QUIT, self.check_quit_event)
             events.handler(sdl2.SDL_KEYDOWN, self.check_quit_key)
             self.graphicsInited = True
 
+    def check_quit_event(self, event, world):
+        self.eventloop.stop()
+
     def check_quit_key(self, event, world):
-        if event.key == sdl2.SDLK_ESCAPE:
+        if event.key.keysym.scancode == sdl2.SDL_SCANCODE_ESCAPE:
             self.eventloop.stop()
 
     def startGame(self):

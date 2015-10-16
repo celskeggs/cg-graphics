@@ -45,7 +45,7 @@ class GameClock:
     def updateFPS(self, time):
         self.frameCount += 1
         if self.frameCount >= 10:
-            self.actualFPS = self.frameCount / (time - self.lastFPSAt)
+            self.actualFPS = (1000.0 * self.frameCount) / (time - self.lastFPSAt)
             self.lastFPSAt = time
             self.frameCount = 0
 
@@ -54,7 +54,7 @@ class GameClock:
         target_time = self.lastFrameAt + target_delay
         real_delay = target_time - time
         if real_delay > 0:
-            sdl2.SDL_Delay(real_delay)
+            sdl2.SDL_Delay(int(real_delay))
         else:
             # couldn't keep up!
             pass

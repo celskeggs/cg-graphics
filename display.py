@@ -1,4 +1,4 @@
-import sdl2, sdl2.sdlgfx, sdl2.sdlttf, colors, pygame_sysfont, image
+import sdl2, sdl2.sdlgfx, sdl2.sdlttf, colors, pygame_sysfont, image, ctypes
 
 DEFAULT_BACKGROUND = (255, 255, 255)
 DEFAULT_FOREGROUND = (0, 0, 0)
@@ -73,7 +73,7 @@ class Display:
         thickness = int(thickness)
         r, g, b = colors.lookupColor(color)
         if thickness <= 0:
-            assert sdl2.sdlgfx.filledEllipseRGBA(self.renderer, int(x), int(y), int(width / 2), int(height / 2), int(r),
+            assert sdl2.sdlgfx.filledEllipseRGBA(self.renderer, int(x), int(y), int(width), int(height), int(r),
                                                  int(g), int(b), 255) == 0, \
                 "Could not fill ellipse: %s" % sdl2.SDL_GetError()
         else:
@@ -87,7 +87,7 @@ class Display:
         self.drawEllipse(x, y, width, height, color, 0)
 
     def drawRectangle(self, x, y, width, height, color=DEFAULT_FOREGROUND, thickness=1):
-        self.drawPolygon(((x, y), (x + width - 1, y), (x, y + height - 1), (x + width - 1, y + height - 1)), color,
+        self.drawPolygon(((x, y), (x + width - 1, y), (x + width - 1, y + height - 1), (x, y + height - 1)), color,
                          thickness)
 
     def fillRectangle(self, x, y, width, height, color=DEFAULT_FOREGROUND):
@@ -95,16 +95,19 @@ class Display:
 
     def drawPolygon(self, pointlist, color=DEFAULT_FOREGROUND, thickness=1):
         thickness = int(thickness)
-        if thickness <= 0:
-            for i, (x1, y1) in range(len(pointlist)):
+        if thickness > 0:
+            for i, (x1, y1) in enumerate(pointlist):
                 x2, y2 = pointlist[(i + 1) % len(pointlist)]
                 self.drawLine(x1, y1, x2, y2, color, thickness)
         else:
             r, g, b = colors.lookupColor(color)
-            xes = [int(x) for x, y in pointlist]
-            yes = [int(y) for x, y in pointlist]
-            assert sdl2.sdlgfx.filledPolygonRGBA(self.renderer, xes, yes, len(pointlist), int(r), int(g), int(b),
-                                                 255) == 0, "Could not fill polygon: %s" % sdl2.SDL_GetError()
+            xlist, ylist = (sdl2.Sint16 * len(pointlist))(), (sdl2.Sint16 * len(pointlist))()
+            for k, (x, y) in enumerate(pointlist):
+                xlist[k], ylist[k] = x, y
+            xptr = ctypes.cast(xlist, ctypes.POINTER(sdl2.Sint16))
+            yptr = ctypes.cast(ylist, ctypes.POINTER(sdl2.Sint16))
+            assert sdl2.sdlgfx.filledPolygonRGBA(self.renderer, xptr, yptr, len(pointlist), int(r), int(g), int(b), 255) \
+                   == 0, "Could not fill polygon: %s" % sdl2.SDL_GetError()
 
     def fillPolygon(self, pointlist, color=DEFAULT_FOREGROUND):
         self.drawPolygon(pointlist, color, 0)
@@ -194,7 +197,8 @@ class Display:
         modeinfo = sdl2.SDL_DisplayMode()
         modes = []
         for mode in range(mode_count):
-            assert sdl2.SDL_GetDisplayMode(display_index, mode, modeinfo) == 0, "Could not get display mode %d: %s" % (mode, sdl2.SDL_GetError())
+            assert sdl2.SDL_GetDisplayMode(display_index, mode, modeinfo) == 0, "Could not get display mode %d: %s" % (
+                mode, sdl2.SDL_GetError())
             modes.append((modeinfo.w, modeinfo.h))
         return modes
 
