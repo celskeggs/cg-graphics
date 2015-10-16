@@ -91,6 +91,13 @@ class Display:
         self.screen.blit(textimage, (int(x), int(y)))
         return textimage.get_width(), textimage.get_height()
 
+    def drawImage(self, image, x, y, rotate=0, scale=1, flipHorizontal=False, flipVertical=False):
+        if flipHorizontal or flipVertical:
+            image = pygame.transform.flip(image, flipHorizontal, flipVertical)
+        if rotate != 0 or scale != 1:
+            image = pygame.transform.rotozoom(image, rotate, scale)
+        self.screen.blit(image, (int(x - image.get_width() / 2), int(y - image.get_height() / 2)))
+
     def getFontList(self):
         return pygame.font.get_fonts()
 
@@ -112,3 +119,6 @@ class Display:
     def getScreenSize(self):
         info = pygame.display.Info()
         return info.current_w, info.current_h
+
+    def saveScreen(self, filename):
+        pygame.image.save(self.screen, filename)

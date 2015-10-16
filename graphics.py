@@ -9,7 +9,7 @@ see http://creativecommons.org/licenses/by-nc-sa/3.0/ for details
 
 print "using graphics.py library version 3.8"
 
-import pygame, colors, keys, joysticks, fps, display, audio, gmath
+import pygame, colors, keys, joysticks, fps, display, audio, gmath, image
 
 
 class World:
@@ -109,44 +109,12 @@ sizeString = _GLI.display.sizeString
 drawString = _GLI.display.drawString
 getFontList = _GLI.display.getFontList
 
-
-#########################################################
-
-def loadImage(filename, transparentColor=None, rotate=0, scale=1, flipHorizontal=False, flipVertical=False):
-    if transparentColor is None:
-        image = pygame.image.load(filename).convert_alpha()
-    else:
-        image = pygame.image.load(filename).convert();
-        if transparentColor is not False:
-            image.set_colorkey(lookupColor(transparentColor))
-    if flipHorizontal or flipVertical:
-        image = pygame.transform.flip(image, flipHorizontal, flipVertical)
-    if rotate != 0 or scale != 1:
-        image = pygame.transform.rotozoom(image, rotate, scale)
-    return image
-
-
-def getImageWidth(image):
-    return image.get_width()
-
-
-def getImageHeight(image):
-    return image.get_height()
-
-
-def getImagePixel(image, x, y):
-    return image.get_at((int(x), int(y)))
-
-
-def getImageRegion(image, x, y, width, height):
-    return image.subsurface(pygame.Rect(int(x), int(y), int(width), int(height)))
-
-
-def saveImage(image, filename):
-    pygame.image.save(image, filename)
-
-
-#########################################################
+loadImage = image.loadImage
+saveImage = image.saveImage
+getImageWidth = image.getImageWidth
+getImageHeight = image.getImageHeight
+getImagePixel = image.getImagePixel
+getImageRegion = image.getImageRegion
 
 loadSound = audio.loadSound
 playSound = audio.playSound
