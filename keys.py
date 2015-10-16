@@ -133,6 +133,29 @@ for code, nameList in keyList:
     for name in nameList:
         name2keyDict[name.lower()] = code
 
+
+def getKeyName(key):
+    return key2nameDict.get(key, None)
+
+
+def getKeyCode(key):
+    if key is None:
+        return None
+    if key in key2nameDict:
+        return key
+    return name2keyDict.get(key.lower(), None)
+
+
+def sameKeys(key1, key2):
+    code1 = getKeyCode(key1)
+    code2 = getKeyCode(key2)
+    if code1 is None:
+        raise Exception, "unknown key name: " + key1
+    if code2 is None:
+        raise Exception, "unknown key name: " + key2
+    return code1 == code2
+
+
 if __name__ == "__main__":
     with open("keys.html", "w") as web:
         web.write('<html><head><title>Python Keys</title></head>\n<body><center>\n<h1>Key Names</h1>\n<table>\n')

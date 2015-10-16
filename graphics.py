@@ -9,7 +9,7 @@ see http://creativecommons.org/licenses/by-nc-sa/3.0/ for details
 
 print "using graphics.py library version 3.8"
 
-import pygame, colors, keys, joysticks, fps, display, audio, gmath, image
+import pygame, colors, keys, joysticks, fps, display, audio, gmath, image, input
 
 
 class World:
@@ -27,12 +27,12 @@ class GameLibInfo:
         self.world = None
         self.display = display.Display()
         self.joyinfo = joysticks.JoysticksInfo()
+        self.keys = input.Keys()
         self.fps = fps.GameClock()
 
         self.graphicsInited = False
         self.eventListeners = {}
         self.nextEventType = pygame.USEREVENT
-        self.keysPressedNow = {}
         self.keepRunning = False
 
     def initGraphics(self):
@@ -195,54 +195,17 @@ def onTimer(listenerFunction, interval):
 
 #########################################################
 
-def getMousePosition():
-    return pygame.mouse.get_pos()
+getMousePosition = input.getMousePosition
+getMouseButton = input.getMouseButton
+hideMouse = input.hideMouse
+showMouse = input.showMouse
+moveMouse = input.moveMouse
 
+isKeyPressed = _GLI.keys.isKeyPressed
 
-def getMouseButton(button):
-    return pygame.mouse.get_pressed()[button - 1]
-
-
-def hideMouse():
-    pygame.mouse.set_visible(False)
-
-
-def showMouse():
-    pygame.mouse.set_visible(True)
-
-
-def moveMouse(x, y):
-    pygame.mouse.set_pos((int(x), int(y)))
-
-
-def isKeyPressed(key):
-    key = getKeyCode(key)
-    return _GLI.keysPressedNow.get(key, False)
-
-
-def getKeyName(key):
-    return keys.key2nameDict.get(key, None)
-
-
-def getKeyCode(key):
-    if key is None:
-        return None
-    if key in keys.key2nameDict:
-        return key
-    return keys.name2keyDict.get(key.lower(), None)
-
-
-def sameKeys(key1, key2):
-    code1 = getKeyCode(key1)
-    code2 = getKeyCode(key2)
-    if code1 is None:
-        raise Exception, "unknown key name: " + key1
-    if code2 is None:
-        raise Exception, "unknown key name: " + key2
-    return code1 == code2
-
-
-#########################################################
+getKeyName = keys.getKeyName
+getKeyCode = keys.getKeyCode
+sameKeys = keys.sameKeys
 
 numGameControllers = _GLI.joyinfo.getJoystickCount
 gameControllerSetDeadZone = _GLI.joyinfo.setDeadzone
@@ -306,13 +269,13 @@ def runGraphics(startFunction, updateFunction, drawFunction):
                         _GLI.keepRunning = False
                         break
                     else:
-                        _GLI.keysPressedNow[event.key] = True
+                        _GLI.keys.pressKey(event.key)
                         if ("keydown", event.key) in _GLI.eventListeners:
                             _GLI.eventListeners[("keydown", event.key)](_GLI.world)
                         else:
                             _GLI.eventListeners["keydown"](_GLI.world, event.key)
                 elif event.type == pygame.KEYUP:
-                    _GLI.keysPressedNow[event.key] = False
+                    _GLI.keys.releaseKey(event.key)
                     if ("keyup", event.key) in _GLI.eventListeners:
                         _GLI.eventListeners[("keyup", event.key)](_GLI.world)
                     else:
