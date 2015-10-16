@@ -9,7 +9,7 @@ see http://creativecommons.org/licenses/by-nc-sa/3.0/ for details
 
 print "using graphics.py library version 3.8"
 
-import pygame, os, math, colors, keys, joysticks, fps
+import pygame, os, math, colors, keys, joysticks, fps, display, audio
 
 
 class World:
@@ -25,23 +25,20 @@ class Point:
 class GameLibInfo:
     def __init__(self):
         self.world = None
-        self.graphicsInited = False
-        self.windowWidth = 0
-        self.windowHeight = 0
-        self.fonts = {}
-        self.eventListeners = {}
-        self.background = (255, 255, 255)
-        self.foreground = (0, 0, 0)
-        self.nextEventType = pygame.USEREVENT
-        self.keysPressedNow = {}
+        self.display = display.Display()
+        self.audio = audio.Audio()
         self.joyinfo = joysticks.JoysticksInfo()
         self.fps = fps.GameClock()
+
+        self.graphicsInited = False
+        self.eventListeners = {}
+        self.nextEventType = pygame.USEREVENT
+        self.keysPressedNow = {}
         self.keepRunning = False
 
     def initGraphics(self):
         if not self.graphicsInited:
-            os.environ['SDL_VIDEO_CENTERED'] = '1'
-            pygame.init()
+            self.display.initialize()
             self.initializeListeners()
             self.joyinfo.initialize()
             self.graphicsInited = True
@@ -72,141 +69,57 @@ def makeGraphicsWindow(width, height, fullscreen=False):
     setGraphicsMode(width, height, fullscreen)
 
 
-def endGraphics():
-    _GLI.keepRunning = False
-
-
-def setGraphicsMode(width, height, fullscreen=False):
-    _GLI.windowWidth = width
-    _GLI.windowHeight = height
-    flags = 0
-    if fullscreen == True:
-        flags = flags | pygame.FULLSCREEN  # | pygame.DOUBLEBUF | pygame.HWSURFACE
-    _GLI.screen = pygame.display.set_mode((width, height), flags)
-
-
 def getScreenSize():
     _GLI.initGraphics()
-    info = pygame.display.Info()
-    return (info.current_w, info.current_h)
+    return _GLI.display.getScreenSize()
 
 
 def getAllScreenSizes():
     _GLI.initGraphics()
-    return pygame.display.list_modes()
-
-
-def setBackground(background):
-    if isinstance(background, str):
-        _GLI.background = lookupColor(background)
-    else:
-        _GLI.background = background
-
-
-def setForeground(foreground):
-    _GLI.foreground = foreground
+    return _GLI.display.getAllScreenSizes()
 
 
 getActualFrameRate = _GLI.fps.getActualFPS
 displayFPS = _GLI.fps.display
 
+setBackground = _GLI.display.setBackground
+setForeground = _GLI.display.setForeground
 
-def getWindowWidth():
-    return _GLI.windowWidth
-
-
-def getWindowHeight():
-    return _GLI.windowHeight
-
-
-def setWindowTitle(title):
-    pygame.display.set_caption(str(title))
-
+setGraphicsMode = _GLI.display.setGraphicsMode
+getWindowWidth = _GLI.display.getWindowWidth
+getWindowHeight = _GLI.display.getWindowHeight
+setWindowTitle = _GLI.display.setWindowTitle
 
 lookupColor = colors.lookupColor
 getColorsList = colors.getColorsList
 
-
 ###################################################################
 
-def drawPixel(x, y, color=_GLI.foreground):
-    _GLI.screen.set_at((int(x), int(y)), lookupColor(color))
+drawPixel = _GLI.display.drawPixel
+drawLine = _GLI.display.drawLine
+drawCircle = _GLI.display.drawCircle
+fillCircle = _GLI.display.fillCircle
+drawEllipse = _GLI.display.drawEllipse
+fillEllipse = _GLI.display.fillEllipse
+drawRectangle = _GLI.display.drawRectangle
+fillRectangle = _GLI.display.fillRectangle
+drawPolygon = _GLI.display.drawPolygon
+fillPolygon = _GLI.display.fillPolygon
+sizeString = _GLI.display.sizeString
+drawString = _GLI.display.drawString
+getFontList = _GLI.display.getFontList
 
-
-def drawLine(x1, y1, x2, y2, color=_GLI.foreground, thickness=1):
-    pygame.draw.line(_GLI.screen, lookupColor(color), (int(x1), int(y1)), (int(x2), int(y2)), int(thickness))
-
-
-def drawCircle(x, y, radius, color=_GLI.foreground, thickness=1):
-    pygame.draw.circle(_GLI.screen, lookupColor(color), (int(x), int(y)), int(radius), int(thickness))
-
-
-def fillCircle(x, y, radius, color=_GLI.foreground):
-    drawCircle(x, y, radius, color, 0)
-
-
-def drawEllipse(x, y, width, height, color=_GLI.foreground, thickness=1):
-    pygame.draw.ellipse(_GLI.screen, lookupColor(color),
-                        pygame.Rect(int(x - width / 2), int(y - height / 2), int(width), int(height)), int(thickness))
-
-
-def fillEllipse(x, y, width, height, color=_GLI.foreground):
-    drawEllipse(x, y, width, height, color, 0)
-
-
-def drawRectangle(x, y, width, height, color=_GLI.foreground, thickness=1):
-    pygame.draw.rect(_GLI.screen, lookupColor(color), pygame.Rect(int(x), int(y), int(width), int(height)),
-                     int(thickness))
-
-
-def fillRectangle(x, y, width, height, color=_GLI.foreground):
-    drawRectangle(x, y, width, height, color, 0)
-
-
-def drawPolygon(pointlist, color=_GLI.foreground, thickness=1):
-    pygame.draw.polygon(_GLI.screen, lookupColor(color), pointlist, int(thickness))
-
-
-def fillPolygon(pointlist, color=_GLI.foreground):
-    drawPolygon(pointlist, color, 0)
-
-
-def sizeString(text, size=30, bold=False, italic=False, font=None):
-    fontSignature = (font, size, bold, italic)
-    if fontSignature not in _GLI.fonts:
-        font = pygame.font.SysFont(font, size, bold, italic)
-        _GLI.fonts[fontSignature] = font
-    else:
-        font = _GLI.fonts[fontSignature]
-    textimage = font.render(str(text), False, (1, 1, 1))
-    return (textimage.get_width(), textimage.get_height())
-
-
-def drawString(text, x, y, size=30, color=_GLI.foreground, bold=False, italic=False, font=None):
-    fontSignature = (font, size, bold, italic)
-    if fontSignature not in _GLI.fonts:
-        font = pygame.font.SysFont(font, size, bold, italic)
-        _GLI.fonts[fontSignature] = font
-    else:
-        font = _GLI.fonts[fontSignature]
-    color = lookupColor(color)
-    textimage = font.render(str(text), False, color)
-    _GLI.screen.blit(textimage, (int(x), int(y)))
-    return (textimage.get_width(), textimage.get_height())
-
-
-def getFontList():
-    return pygame.font.get_fonts()
+getScreenPixel = _GLI.display.getScreenPixel
 
 
 #########################################################
 
 def loadImage(filename, transparentColor=None, rotate=0, scale=1, flipHorizontal=False, flipVertical=False):
-    if transparentColor == None:
+    if transparentColor is None:
         image = pygame.image.load(filename).convert_alpha()
     else:
         image = pygame.image.load(filename).convert();
-        if transparentColor != False:
+        if transparentColor is not False:
             image.set_colorkey(lookupColor(transparentColor))
     if flipHorizontal or flipVertical:
         image = pygame.transform.flip(image, flipHorizontal, flipVertical)
@@ -235,12 +148,6 @@ def getImagePixel(image, x, y):
     return image.get_at((int(x), int(y)))
 
 
-def getScreenPixel(x, y):
-    if x < 0 or x >= _GLI.windowWidth or y < 0 or y >= _GLI.windowHeight:
-        return None
-    return _GLI.screen.get_at((int(x), int(y)))
-
-
 def getImageRegion(image, x, y, width, height):
     return image.subsurface(pygame.Rect(int(x), int(y), int(width), int(height)))
 
@@ -255,39 +162,12 @@ def saveScreen(filename):
 
 #########################################################
 
-def loadSound(filename, volume=1):
-    sound = pygame.mixer.Sound(filename)
-    if volume != 1:
-        sound.set_volume(volume)
-    return sound
-
-
-def playSound(sound, repeat=False):
-    if repeat:
-        sound.play(-1)
-    else:
-        sound.play()
-
-
-def stopSound(sound):
-    sound.stop()
-
-
-def loadMusic(filename, volume=1):
-    pygame.mixer.music.load(filename)
-    if volume != 1:
-        pygame.mixer.music.set_volume(volume)
-
-
-def playMusic(repeat=False):
-    if repeat:
-        pygame.mixer.music.play(-1)
-    else:
-        pygame.mixer.music.play()
-
-
-def stopMusic():
-    pygame.mixer.music.stop()
+loadSound = _GLI.audio.loadSound
+playSound = _GLI.audio.playSound
+stopSound = _GLI.audio.stopSound
+loadMusic = _GLI.audio.loadMusic
+playMusic = _GLI.audio.playMusic
+stopMusic = _GLI.audio.stopMusic
 
 
 #########################################################
@@ -407,6 +287,7 @@ def sameKeys(key1, key2):
         raise Exception, "unknown key name: " + key2
     return code1 == code2
 
+
 #########################################################
 
 numGameControllers = _GLI.joyinfo.getJoystickCount
@@ -423,6 +304,7 @@ gameControllerButton = _GLI.joyinfo.getButton
 gameControllerNumDPads = _GLI.joyinfo.getDPadCount
 gameControllerDPadX = _GLI.joyinfo.getDPadX
 gameControllerDPadY = _GLI.joyinfo.getDPadY
+
 
 #########################################################
 # Math functions
@@ -457,6 +339,11 @@ def pointInPolygon(x, y, polygon):
 
 
 #########################################################
+
+
+def endGraphics():
+    _GLI.keepRunning = False
+
 
 # use animate for non-interactive animations
 def animate(drawFunction, timeLimit, repeat=False):
@@ -533,10 +420,7 @@ def runGraphics(startFunction, updateFunction, drawFunction):
                 elif event.type >= pygame.USEREVENT:  # timer event
                     _GLI.eventListeners["timer" + str(event.type)](_GLI.world)
             updateFunction(_GLI.world)
-            if isinstance(_GLI.background, pygame.Surface):
-                _GLI.screen.blit(_GLI.background, (0, 0))
-            elif _GLI.background != None:
-                _GLI.screen.fill(_GLI.background)
+            _GLI.display.drawBackground()
             drawFunction(_GLI.world)
             pygame.display.flip()
             _GLI.fps.tick()
