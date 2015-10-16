@@ -126,25 +126,25 @@ class JoysticksInfo:
             return value
 
     def onGameControllerStick(self, listenerFunction):
-        def joystick_motion_handler(event, _GLI):
-            listenerFunction(_GLI.world, event.joy, event.axis, self.applyDeadzone(event.value))
+        def joystick_motion_handler(event, world):
+            listenerFunction(world, event.joy, event.axis, self.applyDeadzone(event.value))
 
         events.handler(pygame.JOYAXISMOTION, joystick_motion_handler)
 
     def onGameControllerDPad(self, listenerFunction):
-        def dpad_motion_handler(event, _GLI):
-            listenerFunction(_GLI.world, event.joy, event.hat, event.value[0], event.value[1])
+        def dpad_motion_handler(event, world):
+            listenerFunction(world, event.joy, event.hat, event.value[0], event.value[1])
 
         events.handler(pygame.JOYHATMOTION, dpad_motion_handler)
 
     def onGameControllerButtonPress(self, listenerFunction):
-        def joystick_button_press_handler(event, _GLI):
-            listenerFunction(_GLI.world, event.joy, event.button + 1)
+        def joystick_button_press_handler(event, world):
+            listenerFunction(world, event.joy, event.button + 1)
 
         events.handler(pygame.JOYBUTTONDOWN, joystick_button_press_handler)
 
     def onGameControllerButtonRelease(self, listenerFunction):
-        def joystick_button_release_handler(event, _GLI):
-            listenerFunction(_GLI.world, event.joy, event.button + 1)
+        def joystick_button_release_handler(event, world):
+            listenerFunction(world, event.joy, event.button + 1)
 
         events.handler(pygame.JOYBUTTONUP, joystick_button_release_handler)

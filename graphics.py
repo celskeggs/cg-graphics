@@ -1,15 +1,16 @@
 """
 This is a simple interactive graphics and animation library for Python.
 Author: Andrew Merrill
-Version: 3.8 (last updated October, 2015)
+Contributor: Colby Skeggs
+Version: 4.0 (last updated October, 2015)
 
 This code is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike license
 see http://creativecommons.org/licenses/by-nc-sa/3.0/ for details
 """
 
-print "using graphics.py library version 3.8"
+print "using graphics.py library version 4.0"
 
-import pygame, colors, keys, joysticks, fps, display, audio, gmath, image, keyboard, events
+import pygame, colors, keys, joysticks, fps, display, audio, gmath, image, keyboard, events, mouse, timers
 
 
 class World:
@@ -28,51 +29,69 @@ class GameLibInfo:
         self.display = display.Display()
         self.joyinfo = joysticks.JoysticksInfo()
         self.keys = keyboard.Keys()
+        self.timers = timers.Timers()
         self.fps = fps.GameClock()
+        self.eventloop = events.EventLoop()
 
         self.graphicsInited = False
         self.eventListeners = {}
         self.nextEventType = pygame.USEREVENT
-        self.keepRunning = False
 
     def initGraphics(self):
         if not self.graphicsInited:
             self.display.initialize()
-            self.initializeListeners()
             self.joyinfo.initialize()
             self.keys.initialize()
+            events.handler(pygame.QUIT, self.eventloop.stop)
+            events.handler(pygame.KEYDOWN, self.check_quit_key)
             self.graphicsInited = True
 
-    def initializeListeners(self):
-        onAnyKeyPress(lambda world, key: 0)
-        onAnyKeyRelease(lambda world, key: 0)
-        onMousePress(lambda world, x, y, button: 0)
-        onMouseRelease(lambda world, x, y, button: 0)
-        onWheelForward(lambda world, x, y: 0)
-        onWheelBackward(lambda world, x, y: 0)
-        onMouseMotion(lambda world, x, y, dx, dy, b1, b2, b3: 0)
-        onGameControllerStick(lambda world, device, axis, value: 0)
-        onGameControllerDPad(lambda world, device, pad, xvalue, yvalue: 0)
-        onGameControllerButtonPress(lambda world, device, button: 0)
-        onGameControllerButtonRelease(lambda world, device, button: 0)
+    def check_quit_key(self, event, world):
+        if event.key == pygame.K_ESCAPE:
+            self.eventloop.stop()
 
     def startGame(self):
+        self.world = World()
         self.fps.start()
-        self.keepRunning = True
+        self.eventloop.start()
 
+    def getWorld(self):
+        return self.world
 
-@events.handler(pygame.QUIT)
-def quit(event, _):
-    _GLI.keepRunning = False
+    # use animate for non-interactive animations
+    def animate(self, drawFunction, timeLimit, repeat=False):
+        def startAnimation(world):
+            pass
 
+        def timeExpired(world):
+            if getElapsedTime() >= timeLimit:
+                if repeat:
+                    resetTime()
+                else:
+                    _GLI.eventloop.stop()
 
-@events.handler(pygame.KEYDOWN)
-def key_down(event, _):
-    if event.key == pygame.K_ESCAPE:
-        _GLI.keepRunning = False
+        def drawAnimationFrame(world):
+            drawFunction(float(getElapsedTime()))
+
+        self.runGraphics(startAnimation, timeExpired, drawAnimationFrame)
+
+    # use runGraphics for interactive programs like games
+    def runGraphics(self, startFunction, updateFunction, drawFunction):
+        self.startGame()
+        startFunction(self.world)
+
+        def loopFunction():
+            updateFunction(self.world)
+            self.display.renderWithFunction(lambda: drawFunction(self.world))
+            self.fps.tick()
+
+        self.eventloop.runloop(self.world, loopFunction)
 
 
 _GLI = GameLibInfo()
+
+animate = _GLI.animate
+runGraphics = _GLI.runGraphics
 
 
 def makeGraphicsWindow(width, height, fullscreen=False):
@@ -135,51 +154,23 @@ loadMusic = audio.loadMusic
 playMusic = audio.playMusic
 stopMusic = audio.stopMusic
 
-
-#########################################################
-
-
 onKeyPress = keyboard.onKeyPress
 onAnyKeyPress = keyboard.onAnyKeyPress
 onKeyRelease = keyboard.onKeyRelease
 onAnyKeyRelease = keyboard.onAnyKeyRelease
 
-
-def onMousePress(listenerFunction):
-    _GLI.eventListeners["mousedown"] = listenerFunction
-
-
-def onMouseRelease(listenerFunction):
-    _GLI.eventListeners["mouseup"] = listenerFunction
-
-
-def onWheelForward(listenerFunction):
-    _GLI.eventListeners["wheelforward"] = listenerFunction
-
-
-def onWheelBackward(listenerFunction):
-    _GLI.eventListeners["wheelbackward"] = listenerFunction
-
-
-def onMouseMotion(listenerFunction):
-    _GLI.eventListeners["mousemotion"] = listenerFunction
-
+onMousePress = mouse.onMousePress
+onMouseRelease = mouse.onMouseRelease
+onWheelForward = mouse.onWheelForward
+onWheelBackward = mouse.onWheelBackward
+onMouseMotion = mouse.onMouseMotion
 
 onGameControllerStick = _GLI.joyinfo.onGameControllerStick
 onGameControllerDPad = _GLI.joyinfo.onGameControllerDPad
 onGameControllerButtonPress = _GLI.joyinfo.onGameControllerButtonPress
 onGameControllerButtonRelease = _GLI.joyinfo.onGameControllerButtonRelease
 
-
-def onTimer(listenerFunction, interval):
-    if _GLI.nextEventType > pygame.NUMEVENTS:
-        raise ValueError, "too many timer listeners"
-    _GLI.eventListeners["timer" + str(_GLI.nextEventType)] = listenerFunction
-    pygame.time.set_timer(_GLI.nextEventType, interval)
-    _GLI.nextEventType += 1
-
-
-#########################################################
+onTimer = _GLI.timers.onTimer
 
 getMousePosition = keyboard.getMousePosition
 getMouseButton = keyboard.getMouseButton
@@ -212,52 +203,9 @@ polarToCartesian = gmath.polarToCartesian
 cartesianToPolarAngle = gmath.cartesianToPolarAngle
 pointInPolygon = gmath.pointInPolygon
 
+endGraphics = _GLI.eventloop.stop
 
-#########################################################
-
-
-def endGraphics():
-    _GLI.keepRunning = False
-
-
-# use animate for non-interactive animations
-def animate(drawFunction, timeLimit, repeat=False):
-    def startAnimation(world):
-        pass
-
-    def timeExpired(world):
-        if getElapsedTime() >= timeLimit:
-            if repeat:
-                resetTime()
-            else:
-                _GLI.keepRunning = False
-
-    def drawAnimationFrame(world):
-        drawFunction(float(getElapsedTime()))
-
-    runGraphics(startAnimation, timeExpired, drawAnimationFrame)
-
-
-# use runGraphics for interactive programs like games
-def runGraphics(startFunction, updateFunction, drawFunction):
-    try:
-        _GLI.startGame()
-        _GLI.world = World()
-        startFunction(_GLI.world)
-        while _GLI.keepRunning:
-            events.pump(_GLI)
-            updateFunction(_GLI.world)
-            _GLI.display.drawBackground()
-            drawFunction(_GLI.world)
-            pygame.display.flip()
-            _GLI.fps.tick()
-    finally:
-        pygame.quit()
-
-
-def getWorld():
-    return _GLI.world
-
+getWorld = _GLI.getWorld
 
 getElapsedTime = _GLI.fps.getElapsedTime
 resetTime = _GLI.fps.resetTime

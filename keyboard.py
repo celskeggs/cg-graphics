@@ -12,10 +12,10 @@ class Keys:
     def isKeyPressed(self, key):
         return self.keysPressedNow.get(keys.getKeyCode(key), False)
 
-    def onPress(self, event, _GLI):
+    def onPress(self, event, world):
         self.keysPressedNow[event.key] = True
 
-    def onRelease(self, event, _GLI):
+    def onRelease(self, event, world):
         self.keysPressedNow[event.key] = False
 
 
@@ -24,16 +24,16 @@ def onKeyPress(listenerFunction, key):
     if key is None:
         raise Exception("that is not a valid key")
 
-    def key_press_handler(event, _GLI):
+    def key_press_handler(event, world):
         if event.key == key:
-            listenerFunction(_GLI.world)
+            listenerFunction(world)
 
     events.handler(pygame.KEYDOWN, key_press_handler)
 
 
 def onAnyKeyPress(listenerFunction):
-    def any_key_press_handler(event, _GLI):
-        listenerFunction(_GLI.world, event.key)
+    def any_key_press_handler(event, world):
+        listenerFunction(world, event.key)
 
     events.handler(pygame.KEYDOWN, any_key_press_handler)
 
@@ -43,15 +43,15 @@ def onKeyRelease(listenerFunction, key):
     if key is None:
         raise Exception("that is not a valid key")
 
-    def key_release_handler(event, _GLI):
+    def key_release_handler(event, world):
         if event.key == key:
-            listenerFunction(_GLI.world)
+            listenerFunction(world)
 
     events.handler(pygame.KEYUP, key_release_handler)
 
 
 def onAnyKeyRelease(listenerFunction):
-    def any_key_release_handler(event, _GLI):
-        listenerFunction(_GLI.world, event.key)
+    def any_key_release_handler(event, world):
+        listenerFunction(world, event.key)
 
     events.handler(pygame.KEYUP, any_key_release_handler)

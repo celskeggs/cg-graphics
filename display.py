@@ -122,3 +122,8 @@ class Display:
 
     def saveScreen(self, filename):
         pygame.image.save(self.screen, filename)
+
+    def renderWithFunction(self, renderer):
+        self.drawBackground()
+        renderer()
+        pygame.display.flip()
