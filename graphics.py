@@ -36,8 +36,8 @@ class GameLibInfo:
 
     def initGraphics(self):
         if not self.graphicsInited:
-            os.environ['SDL_VIDEO_CENTERED'] = '1'
             assert sdl2.SDL_Init(sdl2.SDL_INIT_EVERYTHING) == 0, "Could not init: %s" % sdl2.SDL_GetError()
+            self.display.initialize()
             self.joyinfo.initialize()
             self.keys.initialize()
             events.handler(sdl2.SDL_QUIT, self.eventloop.stop)

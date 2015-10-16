@@ -9,16 +9,27 @@ class Display:
         self.windowWidth, self.windowHeight = 0, 0
         self.background = DEFAULT_BACKGROUND
         self.foreground = DEFAULT_FOREGROUND
-        self.screen = None
+        self.window = None
+        self.renderer = None
         self.fonts = {}
+
+    def initialize(self):
+        sdl2.SDL_SetHint(sdl2.SDL_HINT_RENDER_SCALE_QUALITY, "linear")
 
     def setGraphicsMode(self, width, height, fullscreen=False):
         self.windowWidth, self.windowHeight = width, height
-        flags = 0
         if fullscreen:
-            flags |= sdl2.SDL_WINDOW_FULLSCREEN
-            # TODO: pygame.DOUBLEBUF or pygame.HWSURFACE?
-        self.screen = pygame.display.set_mode((width, height), flags)
+            self.window = sdl2.SDL_CreateWindow("graphics.py", sdl2.SDL_WINDOWPOS_UNDEFINED,
+                                                sdl2.SDL_WINDOWPOS_UNDEFINED, 0, 0, sdl2.SDL_WINDOW_FULLSCREEN_DESKTOP)
+        else:
+            self.window = sdl2.SDL_CreateWindow("graphics.py", sdl2.SDL_WINDOWPOS_CENTERED, sdl2.SDL_WINDOWPOS_CENTERED,
+                                                width, height, 0)
+        assert self.window is not None, "Could not create window: %s" % sdl2.SDL_GetError()
+        self.renderer = sdl2.SDL_CreateRenderer(self.window, -1, 0)
+        assert self.renderer is not None, "Could not create renderer: %s" % sdl2.SDL_GetError()
+        if fullscreen:
+            assert sdl2.SDL_RenderSetLogicalSize(self.renderer, width,
+                                                 height) == 0, "Could not set logical size: %s" % sdl2.SDL_GetError()
 
     def getWindowWidth(self):
         return self.windowWidth
@@ -27,7 +38,7 @@ class Display:
         return self.windowHeight
 
     def setWindowTitle(self, title):
-        pygame.display.set_caption(str(title))
+        sdl2.SDL_SetWindowTitle(self.window, str(title))
 
     def drawPixel(self, x, y, color=DEFAULT_FOREGROUND):
         self.screen.set_at((int(x), int(y)), colors.lookupColor(color))
@@ -104,10 +115,15 @@ class Display:
         self.foreground = colors.lookupColor(foreground)
 
     def drawBackground(self):
-        if isinstance(self.background, pygame.Surface):
-            self.screen.blit(self.background, (0, 0))
+        if isinstance(self.background, sdl2.SDL_Texture):
+            # TODO: does this handle stretching right?
+            assert sdl2.SDL_RenderCopy(self.renderer, self.background, None,
+                                       None) == 0, "Could not render background: %s" % sdl2.SDL_GetError()
         elif self.background is not None:
-            self.screen.fill(self.background)
+            r, g, b = self.background
+            assert sdl2.SDL_SetRenderDrawColor(self.renderer, r, g, b,
+                                               255) == 0, "Could not set render color: %s" % sdl2.SDL_GetError()
+            assert sdl2.SDL_RenderClear(self.renderer) == 0, "Could not set render color: %s" % sdl2.SDL_GetError()
 
     def getAllScreenSizes(self):
         return pygame.display.list_modes()
@@ -122,4 +138,4 @@ class Display:
     def renderWithFunction(self, renderer):
         self.drawBackground()
         renderer()
-        pygame.display.flip()
+        sdl2.SDL_RenderPresent(self.renderer)
