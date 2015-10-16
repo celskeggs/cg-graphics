@@ -1,4 +1,4 @@
-import pygame, keys, events
+import sdl2, keys, events
 
 
 class Keys:

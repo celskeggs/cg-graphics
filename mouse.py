@@ -1,4 +1,4 @@
-import pygame, events
+import sdl2, events
 
 
 def getMousePosition():

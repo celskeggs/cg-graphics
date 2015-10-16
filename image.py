@@ -1,4 +1,4 @@
-import pygame, colors
+import sdl2, colors
 
 
 def loadImage(filename, transparentColor=None, rotate=0, scale=1, flipHorizontal=False, flipVertical=False):

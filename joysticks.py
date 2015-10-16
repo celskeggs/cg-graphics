@@ -1,4 +1,4 @@
-import pygame, events
+import sdl2, events
 
 joystickLabels = {
     "Logitech Dual Action": [["X", "Y"], ["LeftX", "LeftY", "RightX", "RightY"]],

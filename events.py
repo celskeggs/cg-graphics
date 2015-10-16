@@ -1,4 +1,4 @@
-import pygame
+import sdl2
 
 event_handlers = {}
 

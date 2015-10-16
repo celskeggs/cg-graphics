@@ -1,4 +1,4 @@
-import pygame, os, colors
+import sdl2, os, colors
 
 DEFAULT_BACKGROUND = (255, 255, 255)
 DEFAULT_FOREGROUND = (0, 0, 0)

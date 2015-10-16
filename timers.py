@@ -1,17 +1,21 @@
-import pygame, events
+import sdl2, events
 
 
-class Timers:
-    def __init__(self):
-        self.nextEventType = pygame.USEREVENT
+# TODO: pass SDL_INIT_TIMER to SDL_Init
 
-    def onTimer(self, listenerFunction, interval):
-        if self.nextEventType > pygame.NUMEVENTS:
-            raise ValueError, "too many timer listeners"
+def onTimer(listenerFunction, interval):
+    eventType = sdl2.SDL_RegisterEvents(1)
+    assert eventType != 0xFFFFFFFF, "Out of timers!"
 
-        def timer_handler(event, world):
-            listenerFunction(world)
+    def timer_handler(event, world):
+        listenerFunction(world)
 
-        pygame.time.set_timer(self.nextEventType, interval)
-        events.handler(self.nextEventType, timer_handler)
-        self.nextEventType += 1
+    def raw_callback(interval, param):
+        event = sdl2.SDL_Event()
+        event.type = eventType
+        event.user = sdl2.SDL_UserEvent()
+        assert sdl2.SDL_PushEvent(event) > 0, "Could not push event: %s" % sdl2.SDL_GetError()
+        return interval
+
+    events.handler(eventType, timer_handler)
+    assert sdl2.SDL_AddTimer(interval, raw_callback, None) != 0, "Could not create timer: %s" % sdl2.SDL_GetError()
