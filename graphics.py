@@ -9,7 +9,7 @@ see http://creativecommons.org/licenses/by-nc-sa/3.0/ for details
 
 print "using graphics.py library version 3.8"
 
-import pygame, colors, keys, joysticks, fps, display, audio, gmath, image, input
+import pygame, colors, keys, joysticks, fps, display, audio, gmath, image, input, events
 
 
 class World:
@@ -125,7 +125,6 @@ stopMusic = audio.stopMusic
 
 
 #########################################################
-
 
 def onKeyPress(listenerFunction, key):
     key = getKeyCode(key)
@@ -259,55 +258,7 @@ def runGraphics(startFunction, updateFunction, drawFunction):
         _GLI.world = World()
         startFunction(_GLI.world)
         while _GLI.keepRunning:
-            eventlist = pygame.event.get()
-            for event in eventlist:
-                if event.type == pygame.QUIT:
-                    _GLI.keepRunning = False
-                    break
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        _GLI.keepRunning = False
-                        break
-                    else:
-                        _GLI.keys.pressKey(event.key)
-                        if ("keydown", event.key) in _GLI.eventListeners:
-                            _GLI.eventListeners[("keydown", event.key)](_GLI.world)
-                        else:
-                            _GLI.eventListeners["keydown"](_GLI.world, event.key)
-                elif event.type == pygame.KEYUP:
-                    _GLI.keys.releaseKey(event.key)
-                    if ("keyup", event.key) in _GLI.eventListeners:
-                        _GLI.eventListeners[("keyup", event.key)](_GLI.world)
-                    else:
-                        _GLI.eventListeners["keyup"](_GLI.world, event.key)
-                elif event.type == pygame.MOUSEBUTTONDOWN:
-                    if event.button <= 3:
-                        _GLI.eventListeners["mousedown"](_GLI.world, event.pos[0], event.pos[1], event.button)
-                    elif event.button == 4:
-                        _GLI.eventListeners["wheelforward"](_GLI.world, event.pos[0], event.pos[1])
-                    elif event.button == 5:
-                        _GLI.eventListeners["wheelbackward"](_GLI.world, event.pos[0], event.pos[1])
-                elif event.type == pygame.MOUSEBUTTONUP:
-                    if event.button <= 3:
-                        _GLI.eventListeners["mouseup"](_GLI.world, event.pos[0], event.pos[1], event.button)
-                elif event.type == pygame.MOUSEMOTION:
-                    if event.rel[0] != 0 or event.rel[1] != 0:
-                        button1 = (event.buttons[0] == 1)
-                        button2 = (event.buttons[1] == 1)
-                        button3 = (event.buttons[2] == 1)
-                        _GLI.eventListeners["mousemotion"](_GLI.world, event.pos[0], event.pos[1], event.rel[0],
-                                                           event.rel[1], button1, button2, button3)
-                elif event.type == pygame.JOYAXISMOTION:
-                    joystickValue = _GLI.joyinfo.applyDeadzone(event.value)
-                    _GLI.eventListeners["stickmotion"](_GLI.world, event.joy, event.axis, joystickValue)
-                elif event.type == pygame.JOYHATMOTION:
-                    _GLI.eventListeners["dpadmotion"](_GLI.world, event.joy, event.hat, event.value[0], event.value[1])
-                elif event.type == pygame.JOYBUTTONUP:
-                    _GLI.eventListeners["joybuttonup"](_GLI.world, event.joy, event.button + 1)
-                elif event.type == pygame.JOYBUTTONDOWN:
-                    _GLI.eventListeners["joybuttondown"](_GLI.world, event.joy, event.button + 1)
-                elif event.type >= pygame.USEREVENT:  # timer event
-                    _GLI.eventListeners["timer" + str(event.type)](_GLI.world)
+            events.pump(_GLI)
             updateFunction(_GLI.world)
             _GLI.display.drawBackground()
             drawFunction(_GLI.world)
