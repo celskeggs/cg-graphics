@@ -6,8 +6,8 @@ class Keys:
         self.keysPressedNow = {}
 
     def initialize(self):
-        events.handler(pygame.KEYDOWN, self.onPress)
-        events.handler(pygame.KEYUP, self.onRelease)
+        events.handler(sdl2.SDL_KEYDOWN, self.onPress)
+        events.handler(sdl2.SDL_KEYUP, self.onRelease)
 
     def isKeyPressed(self, key):
         return self.keysPressedNow.get(keys.getKeyCode(key), False)
@@ -28,14 +28,14 @@ def onKeyPress(listenerFunction, key):
         if event.key == key:
             listenerFunction(world)
 
-    events.handler(pygame.KEYDOWN, key_press_handler)
+    events.handler(sdl2.SDL_KEYDOWN, key_press_handler)
 
 
 def onAnyKeyPress(listenerFunction):
     def any_key_press_handler(event, world):
         listenerFunction(world, event.key)
 
-    events.handler(pygame.KEYDOWN, any_key_press_handler)
+    events.handler(sdl2.SDL_KEYDOWN, any_key_press_handler)
 
 
 def onKeyRelease(listenerFunction, key):
@@ -47,11 +47,11 @@ def onKeyRelease(listenerFunction, key):
         if event.key == key:
             listenerFunction(world)
 
-    events.handler(pygame.KEYUP, key_release_handler)
+    events.handler(sdl2.SDL_KEYUP, key_release_handler)
 
 
 def onAnyKeyRelease(listenerFunction):
     def any_key_release_handler(event, world):
         listenerFunction(world, event.key)
 
-    events.handler(pygame.KEYUP, any_key_release_handler)
+    events.handler(sdl2.SDL_KEYUP, any_key_release_handler)

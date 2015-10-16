@@ -1,4 +1,4 @@
-import sdl2, os, colors
+import sdl2, colors
 
 DEFAULT_BACKGROUND = (255, 255, 255)
 DEFAULT_FOREGROUND = (0, 0, 0)
@@ -12,15 +12,11 @@ class Display:
         self.screen = None
         self.fonts = {}
 
-    def initialize(self):
-        os.environ['SDL_VIDEO_CENTERED'] = '1'
-        pygame.init()
-
     def setGraphicsMode(self, width, height, fullscreen=False):
         self.windowWidth, self.windowHeight = width, height
         flags = 0
         if fullscreen:
-            flags |= pygame.FULLSCREEN
+            flags |= sdl2.SDL_WINDOW_FULLSCREEN
             # TODO: pygame.DOUBLEBUF or pygame.HWSURFACE?
         self.screen = pygame.display.set_mode((width, height), flags)
 

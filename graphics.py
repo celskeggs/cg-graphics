@@ -10,7 +10,7 @@ see http://creativecommons.org/licenses/by-nc-sa/3.0/ for details
 
 print("using graphics.py library version 4.0")
 
-import sdl2, colors, keys, joysticks, fps, display, audio, gmath, image, keyboard, events, mouse, timers
+import sdl2, os, colors, keys, joysticks, fps, display, audio, gmath, image, keyboard, events, mouse, timers
 
 
 class World:
@@ -36,15 +36,16 @@ class GameLibInfo:
 
     def initGraphics(self):
         if not self.graphicsInited:
-            self.display.initialize()
+            os.environ['SDL_VIDEO_CENTERED'] = '1'
+            assert sdl2.SDL_Init(sdl2.SDL_INIT_EVERYTHING) == 0, "Could not init: %s" % sdl2.SDL_GetError()
             self.joyinfo.initialize()
             self.keys.initialize()
-            events.handler(pygame.QUIT, self.eventloop.stop)
-            events.handler(pygame.KEYDOWN, self.check_quit_key)
+            events.handler(sdl2.SDL_QUIT, self.eventloop.stop)
+            events.handler(sdl2.SDL_KEYDOWN, self.check_quit_key)
             self.graphicsInited = True
 
     def check_quit_key(self, event, world):
-        if event.key == pygame.K_ESCAPE:
+        if event.key == sdl2.SDLK_ESCAPE:
             self.eventloop.stop()
 
     def startGame(self):
