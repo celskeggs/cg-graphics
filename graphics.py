@@ -9,7 +9,7 @@ see http://creativecommons.org/licenses/by-nc-sa/3.0/ for details
 
 print "using graphics.py library version 3.8"
 
-import pygame, os, math, colors, keys, joysticks, fps, display, audio
+import pygame, colors, keys, joysticks, fps, display, audio, gmath
 
 
 class World:
@@ -26,7 +26,6 @@ class GameLibInfo:
     def __init__(self):
         self.world = None
         self.display = display.Display()
-        self.audio = audio.Audio()
         self.joyinfo = joysticks.JoysticksInfo()
         self.fps = fps.GameClock()
 
@@ -90,10 +89,11 @@ getWindowWidth = _GLI.display.getWindowWidth
 getWindowHeight = _GLI.display.getWindowHeight
 setWindowTitle = _GLI.display.setWindowTitle
 
+saveScreen = _GLI.display.saveScreen
+getScreenPixel = _GLI.display.getScreenPixel
+
 lookupColor = colors.lookupColor
 getColorsList = colors.getColorsList
-
-###################################################################
 
 drawPixel = _GLI.display.drawPixel
 drawLine = _GLI.display.drawLine
@@ -108,8 +108,6 @@ fillPolygon = _GLI.display.fillPolygon
 sizeString = _GLI.display.sizeString
 drawString = _GLI.display.drawString
 getFontList = _GLI.display.getFontList
-
-getScreenPixel = _GLI.display.getScreenPixel
 
 
 #########################################################
@@ -126,14 +124,6 @@ def loadImage(filename, transparentColor=None, rotate=0, scale=1, flipHorizontal
     if rotate != 0 or scale != 1:
         image = pygame.transform.rotozoom(image, rotate, scale)
     return image
-
-
-def drawImage(image, x, y, rotate=0, scale=1, flipHorizontal=False, flipVertical=False):
-    if flipHorizontal or flipVertical:
-        image = pygame.transform.flip(image, flipHorizontal, flipVertical)
-    if rotate != 0 or scale != 1:
-        image = pygame.transform.rotozoom(image, rotate, scale)
-    _GLI.screen.blit(image, (int(x - image.get_width() / 2), int(y - image.get_height() / 2)))
 
 
 def getImageWidth(image):
@@ -156,18 +146,14 @@ def saveImage(image, filename):
     pygame.image.save(image, filename)
 
 
-def saveScreen(filename):
-    pygame.image.save(_GLI.screen, filename)
-
-
 #########################################################
 
-loadSound = _GLI.audio.loadSound
-playSound = _GLI.audio.playSound
-stopSound = _GLI.audio.stopSound
-loadMusic = _GLI.audio.loadMusic
-playMusic = _GLI.audio.playMusic
-stopMusic = _GLI.audio.stopMusic
+loadSound = audio.loadSound
+playSound = audio.playSound
+stopSound = audio.stopSound
+loadMusic = audio.loadMusic
+playMusic = audio.playMusic
+stopMusic = audio.stopMusic
 
 
 #########################################################
@@ -305,37 +291,9 @@ gameControllerNumDPads = _GLI.joyinfo.getDPadCount
 gameControllerDPadX = _GLI.joyinfo.getDPadX
 gameControllerDPadY = _GLI.joyinfo.getDPadY
 
-
-#########################################################
-# Math functions
-
-def polarToCartesian(angle, length):
-    angle = math.radians(angle)
-    dx = length * math.cos(angle)
-    dy = length * -math.sin(angle)
-    return (dx, dy)
-
-
-def cartesianToPolarAngle(x, y):
-    return math.degrees(math.atan2(-y, x))
-
-
-def pointInPolygon(x, y, polygon):
-    # original author: W. Randolph Franklin
-    # source: http://www.ecse.rpi.edu/Homepages/wrf/Research/Short_Notes/pnpoly.html
-    inside = False
-    length = len(polygon)
-    i = 0
-    j = length - 1
-    while i < length:
-        (vix, viy) = polygon[i]
-        (vjx, vjy) = polygon[j]
-        if (((viy > y) != (vjy > y)) and
-                (x < (vjx - vix) * (y - viy) / float(vjy - viy) + vix)):
-            inside = not inside
-        j = i
-        i += 1
-    return inside
+polarToCartesian = gmath.polarToCartesian
+cartesianToPolarAngle = gmath.cartesianToPolarAngle
+pointInPolygon = gmath.pointInPolygon
 
 
 #########################################################
