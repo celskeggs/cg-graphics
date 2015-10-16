@@ -34,8 +34,6 @@ class GameLibInfo:
         self.eventloop = events.EventLoop()
 
         self.graphicsInited = False
-        self.eventListeners = {}
-        self.nextEventType = pygame.USEREVENT
 
     def initGraphics(self):
         if not self.graphicsInited:
