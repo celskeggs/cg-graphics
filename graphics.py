@@ -10,7 +10,7 @@ see http://creativecommons.org/licenses/by-nc-sa/3.0/ for details
 
 print("using graphics.py library version 4.0")
 
-import sdl2, os, colors, keys, joysticks, fps, display, audio, gmath, image, keyboard, events, mouse, timers
+import sdl2, os, colors, keys, joysticks, display, audio, gmath, image, keyboard, events, mouse, timers
 
 
 class World:
@@ -29,7 +29,7 @@ class GameLibInfo:
         self.display = display.Display()
         self.joyinfo = joysticks.JoysticksInfo()
         self.keys = keyboard.Keys()
-        self.fps = fps.GameClock()
+        self.fps = timers.GameClock()
         self.eventloop = events.EventLoop()
 
         self.graphicsInited = False
