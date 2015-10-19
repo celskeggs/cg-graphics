@@ -44,7 +44,7 @@ class Display:
     def drawPixel(self, x, y, color=DEFAULT_FOREGROUND):
         self.set_render_color(color)
         assert sdl2.SDL_RenderDrawPoint(self.renderer, int(x), int(y)) == 0, \
-            "Could not draw pixel: 5s" % sdl2.SDL_GetError()
+            "Could not draw pixel: %s" % sdl2.SDL_GetError()
 
     def getScreenPixel(self, x, y):
         if 0 <= x < self.windowWidth and 0 <= y < self.windowHeight:
@@ -79,9 +79,9 @@ class Display:
         else:
             # what on earth was pygame doing???
             for loop in range(thickness):
-                assert sdl2.sdlgfx.filledCircleRGBA(self.renderer, int(x), int(y), int(width / 2) - loop,
-                                                    int(height / 2) - loop, int(r), int(g), int(b), 255) == 0, \
-                    "Could not fill ellipse: %s" % sdl2.SDL_GetError()
+                assert sdl2.sdlgfx.ellipseRGBA(self.renderer, int(x), int(y), int(width / 2) - loop,
+                                               int(height / 2) - loop, int(r), int(g), int(b), 255) == 0, \
+                    "Could not draw ellipse: %s" % sdl2.SDL_GetError()
 
     def fillEllipse(self, x, y, width, height, color=DEFAULT_FOREGROUND):
         self.drawEllipse(x, y, width, height, color, 0)
@@ -137,21 +137,28 @@ class Display:
         assert w[0] != -1 and h[0] != -1
         return w[0], h[0]
 
+    def convertColor(self, color):
+        if color[3:]:
+            return sdl2.SDL_Color(color[0], color[1], color[2], color[3])
+        else:
+            return sdl2.SDL_Color(color[0], color[1], color[2])
+
     def drawString(self, text, x, y, size=30, color=DEFAULT_FOREGROUND, bold=False, italic=False, font=None):
-        color = colors.lookupColor(color)
+        color = self.convertColor(colors.lookupColor(color))
         font = self.getCachedFont(bold, font, italic, size)
+        # TODO: do we want to change the quality?
         textimage = sdl2.sdlttf.TTF_RenderUTF8_Solid(font, str(text).encode("utf-8"), color)
         assert textimage is not None, "Could not render font: %s" % sdl2.SDL_GetError()
         try:
             texture = sdl2.SDL_CreateTextureFromSurface(self.renderer, textimage)
             assert texture is not None, "Could not convert surface: %s" % sdl2.SDL_GetError()
             try:
-                target_rect = sdl2.SDL_Rect(int(x), int(y), textimage.w, textimage.h)
+                target_rect = sdl2.SDL_Rect(int(x), int(y), textimage.contents.w, textimage.contents.h)
                 assert sdl2.SDL_RenderCopy(self.renderer, texture, None, target_rect) == 0, \
                     "Could not render text: %s" % sdl2.SDL_GetError()
-                return textimage.w, textimage.h
+                return textimage.contents.w, textimage.contents.h
             finally:
-                sdl2.SDL_DestroyTexture(textimage)
+                sdl2.SDL_DestroyTexture(texture)
         finally:
             sdl2.SDL_FreeSurface(textimage)
 

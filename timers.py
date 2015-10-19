@@ -1,8 +1,6 @@
 import sdl2, events
 
 
-# TODO: pass SDL_INIT_TIMER to SDL_Init
-
 def onTimer(listenerFunction, interval):
     eventType = sdl2.SDL_RegisterEvents(1)
     assert eventType != 0xFFFFFFFF, "Out of timers!"
