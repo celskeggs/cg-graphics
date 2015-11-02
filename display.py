@@ -1,4 +1,4 @@
-import sdl2, sdl2.sdlgfx, sdl2.sdlttf, colors, pygame_sysfont, image, ctypes
+import sdl2, sdl2.sdlgfx, sdl2.sdlttf, colors, pygame_sysfont, image, ctypes, py3compat
 
 DEFAULT_BACKGROUND = (255, 255, 255)
 DEFAULT_FOREGROUND = (0, 0, 0)
@@ -14,16 +14,17 @@ class Display:
         self.fonts = {}
 
     def initialize(self):
-        sdl2.SDL_SetHint(sdl2.SDL_HINT_RENDER_SCALE_QUALITY, "linear")
+        sdl2.SDL_SetHint(sdl2.SDL_HINT_RENDER_SCALE_QUALITY, b"linear")
         assert sdl2.sdlttf.TTF_Init() == 0, "Could not initialize TTF library: %s" % sdl2.SDL_GetError()
 
-    def setGraphicsMode(self, width, height, fullscreen=False):
+    def setGraphicsMode(self, width, height, fullscreen=False, title="graphics.py"): # TODO: should title be added here?
         self.windowWidth, self.windowHeight = width, height
+        title = py3compat.to_bin(title)
         if fullscreen:
-            self.window = sdl2.SDL_CreateWindow("graphics.py", sdl2.SDL_WINDOWPOS_UNDEFINED,
+            self.window = sdl2.SDL_CreateWindow(title, sdl2.SDL_WINDOWPOS_UNDEFINED,
                                                 sdl2.SDL_WINDOWPOS_UNDEFINED, 0, 0, sdl2.SDL_WINDOW_FULLSCREEN_DESKTOP)
         else:
-            self.window = sdl2.SDL_CreateWindow("graphics.py", sdl2.SDL_WINDOWPOS_CENTERED, sdl2.SDL_WINDOWPOS_CENTERED,
+            self.window = sdl2.SDL_CreateWindow(title, sdl2.SDL_WINDOWPOS_CENTERED, sdl2.SDL_WINDOWPOS_CENTERED,
                                                 width, height, 0)
         assert self.window is not None, "Could not create window: %s" % sdl2.SDL_GetError()
         self.renderer = sdl2.SDL_CreateRenderer(self.window, -1, 0)
@@ -117,7 +118,7 @@ class Display:
         fontSignature = (font, size, bold, italic)
         if fontSignature not in self.fonts:
             fontpath, size, bold, italic = pygame_sysfont.lookup_sys(font, size, bold, italic)
-            font = sdl2.sdlttf.TTF_OpenFont(fontpath, size)
+            font = sdl2.sdlttf.TTF_OpenFont(py3compat.to_bin(fontpath), size)
             assert font is not None, "Could not open font: %s" % sdl2.SDL_GetError()
             style = sdl2.sdlttf.TTF_STYLE_NORMAL
             if bold:

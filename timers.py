@@ -37,7 +37,7 @@ class GameClock:
     def maybePrintFPS(self, time):
         if self.displayInterval > 0:
             if time > self.lastDisplayedAt + self.displayInterval:
-                print self.getActualFPS()
+                print(self.getActualFPS())
                 self.lastDisplayedAt = time
 
     def updateFPS(self, time):

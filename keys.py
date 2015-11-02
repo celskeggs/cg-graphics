@@ -148,9 +148,9 @@ def sameKeys(key1, key2):
     code1 = getKeyCode(key1)
     code2 = getKeyCode(key2)
     if code1 is None:
-        raise Exception, "unknown key name: " + key1
+        raise Exception("unknown key name: " + key1)
     if code2 is None:
-        raise Exception, "unknown key name: " + key2
+        raise Exception("unknown key name: " + key2)
     return code1 == code2
 
 

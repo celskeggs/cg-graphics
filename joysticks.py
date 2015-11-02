@@ -33,7 +33,7 @@ class JoysticksInfo:
     def initialize(self):
         joystick_count = sdl2.SDL_NumJoysticks()
         if joystick_count < 0:
-            print "failed to init Joysticks: %s" % sdl2.SDL_GetError()
+            print("failed to init Joysticks: %s" % sdl2.SDL_GetError())
             return
         for i in range(joystick_count):
             joystick = sdl2.SDL_JoystickOpen(i)
@@ -43,14 +43,14 @@ class JoysticksInfo:
             stickname = sdl2.SDL_JoystickName(joystick)
             assert stickname is not None, "failed to find name of Joystick %d: %s" % (i, sdl2.SDL_GetError())
             if stickname in joystickLabels:
-                print "recognized a", stickname
+                print("recognized a", stickname)
                 label_list = joystickLabels[stickname]
             else:
-                print "unknown game controller:", stickname
+                print("unknown game controller:", stickname)
                 label_list = joystickLabelsUnknown
             for labels in label_list:
                 self.setAxisNames(labels, i)
-            print "    with axes:", self.getAxisNames(i)
+            print("    with axes:", self.getAxisNames(i))
 
     def setDeadzone(self, deadzone):
         self.joystickDeadZone = deadzone
