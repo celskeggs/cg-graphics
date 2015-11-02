@@ -1,14 +1,14 @@
 """
 This is a simple interactive graphics and animation library for Python.
-Author: Andrew Merrill
-Contributor: Colby Skeggs
-Version: 4.0 (last updated October, 2015)
+Original author: Andrew Merrill
+Maintainer: Colby Skeggs
+Version: 4.0.0 (last updated November 2015)
 
 This code is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike license
 see http://creativecommons.org/licenses/by-nc-sa/3.0/ for details
 """
 
-print("using graphics.py library version 4.0")
+print("using graphics.py library version 4.0.0")
 
 import sdl2, os, colors, keys, joysticks, display, audio, gmath, image, keyboard, events, mouse, timers
 
