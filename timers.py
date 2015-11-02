@@ -47,16 +47,17 @@ class GameClock:
             self.lastFPSAt = time
             self.frameCount = 0
 
-    def tickDelay(self, time):
+    def tickDelay(self):
+        time = sdl2.SDL_GetTicks()
         target_delay = 1000.0 / self.targetFPS
         target_time = self.lastFrameAt + target_delay
         real_delay = target_time - time
         if real_delay > 0:
             sdl2.SDL_Delay(int(real_delay))
+            self.lastFrameAt = target_time
         else:
             # couldn't keep up!
-            pass
-        self.lastFrameAt = time
+            self.lastFrameAt = time
 
     def displayFPS(self, interval):
         self.displayInterval = interval * 1000
@@ -73,7 +74,7 @@ class GameClock:
         time = sdl2.SDL_GetTicks()
         self.updateFPS(time)
         self.maybePrintFPS(time)
-        self.tickDelay(time)
+        self.tickDelay()
 
     def setTargetFPS(self, frameRate):
         self.targetFPS = frameRate
