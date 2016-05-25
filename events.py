@@ -1,4 +1,4 @@
-import sdl2, sdl2.sdlttf
+import sdl2, sdl2.sdlttf, sdl2.sdlmixer
 
 event_handlers = {}
 
@@ -31,6 +31,7 @@ class EventLoop:
                 loopFunction()
         finally:
             # TODO: make these go in a more appropriate place?
+            sdl2.sdlmixer.Mix_Quit()
             sdl2.sdlttf.TTF_Quit()
             sdl2.SDL_Quit()
 

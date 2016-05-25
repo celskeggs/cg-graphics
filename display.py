@@ -240,8 +240,10 @@ class Display:
                                                   0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000)
         assert render_target is not None, "Could not create RGB surface for screenshot: %s" % sdl2.SDL_GetError()
         try:
-            assert sdl2.SDL_RenderReadPixels(self.renderer, None, sdl2.SDL_PIXELFORMAT_ARGB8888, render_target.pixels,
-                                             render_target.pitch) == 0, "Could not read screenshot: %s" % sdl2.SDL_GetError()
+            assert sdl2.SDL_RenderReadPixels(self.renderer, sdl2.SDL_Rect(0, 0, self.windowWidth, self.windowHeight),
+                                             sdl2.SDL_PIXELFORMAT_ARGB8888,
+                                             render_target.contents.pixels,
+                                             render_target.contents.pitch) == 0, "Could not read screenshot: %s" % sdl2.SDL_GetError()
             image.saveImage(render_target, filename)
         finally:
             sdl2.SDL_FreeSurface(render_target)
