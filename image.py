@@ -1,4 +1,4 @@
-import sdl2, colors
+import sdl2, sdl2.sdlimage, colors
 
 # TODO: make sure everything gets freed properly, in general
 class Image:
@@ -12,6 +12,9 @@ class Image:
 
 def loadImage(filename, transparentColor=None, rotate=0, scale=1, flipHorizontal=False, flipVertical=False):
     if transparentColor is None:
+        image_base = sdl2.sdlimage.IMG_Load(filename)
+        assert image is not None, "Could not load image: %s" % sdl2.sdlimage.IMG_GetError()
+        image = sdl2.SDL_DisplayFormatAlpha(image)
         image = pygame.image.load(filename).convert_alpha()
     else:
         image = pygame.image.load(filename).convert()

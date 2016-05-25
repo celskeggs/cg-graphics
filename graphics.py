@@ -1,7 +1,7 @@
 """
 This is a simple interactive graphics and animation library for Python.
 Original author: Andrew Merrill
-Maintainer: Colby Skeggs
+Maintainer: Cel Skeggs
 Version: 4.0.0 (last updated November 2015)
 
 This code is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike license
@@ -124,7 +124,6 @@ stopMusic = audio.stopMusic
 
 # colors
 
-lookupColor = colors.lookupColor
 getColorsList = colors.getColorsList
 
 # display

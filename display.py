@@ -8,7 +8,7 @@ class Display:
     def __init__(self):
         self.windowWidth, self.windowHeight = 0, 0
         self.background = DEFAULT_BACKGROUND
-        self.foreground = DEFAULT_FOREGROUND
+        self.foreground = DEFAULT_FOREGROUND  # TODO: use this
         self.window = None
         self.renderer = None
         self.fonts = {}
@@ -17,7 +17,8 @@ class Display:
         sdl2.SDL_SetHint(sdl2.SDL_HINT_RENDER_SCALE_QUALITY, b"linear")
         assert sdl2.sdlttf.TTF_Init() == 0, "Could not initialize TTF library: %s" % sdl2.SDL_GetError()
 
-    def setGraphicsMode(self, width, height, fullscreen=False, title="graphics.py"): # TODO: should title be added here?
+    # TODO: should title be added here?
+    def setGraphicsMode(self, width, height, fullscreen=False, title="graphics.py"):
         self.windowWidth, self.windowHeight = width, height
         title = py3compat.to_bin(title)
         if fullscreen:
@@ -46,17 +47,6 @@ class Display:
         self.set_render_color(color)
         assert sdl2.SDL_RenderDrawPoint(self.renderer, int(x), int(y)) == 0, \
             "Could not draw pixel: %s" % sdl2.SDL_GetError()
-
-    def getScreenPixel(self, x, y):
-        if 0 <= x < self.windowWidth and 0 <= y < self.windowHeight:
-            out = [0, 0, 0, 17, 17, 17]
-            # TODO: make sure this actually works like this
-            assert sdl2.SDL_RenderReadPixels(self.renderer, sdl2.SDL_Rect(x, y, 1, 1), sdl2.SDL_PIXELFORMAT_RGB888, out,
-                                             3) == 0, "Could not read screen pixel: %s" % sdl2.SDL_GetError()
-            assert out[3:] == [17, 17, 17]  # TEMPORARY TO MAKE SURE THAT MEMORY ISN'T OVERWRITTEN
-            return out[0], out[1], out[2]
-        else:
-            return None
 
     def drawLine(self, x1, y1, x2, y2, color=DEFAULT_FOREGROUND, thickness=1):
         assert int(thickness) >= 1, "invalid thickness - gfx will fail"
@@ -230,6 +220,20 @@ class Display:
         modeinfo = sdl2.SDL_DisplayMode()
         sdl2.SDL_GetCurrentDisplayMode(display_index, modeinfo)
         return modeinfo.w, modeinfo.h
+
+    def getScreenPixel(self, x, y):
+        if 0 <= x < self.windowWidth and 0 <= y < self.windowHeight:
+            out = (sdl2.Uint8 * 7)()
+            out[0] = out[1] = out[2] = 3
+            out[3] = out[4] = out[5] = out[6] = 17
+            assert sdl2.SDL_RenderReadPixels(self.renderer, sdl2.SDL_Rect(x, y, 1, 1), sdl2.SDL_PIXELFORMAT_RGB888, out,
+                                             3) == 0, "Could not read screen pixel: %s" % sdl2.SDL_GetError()
+            # makes sure that memory isn't corrupted
+            # but we have to ignore the fourth byte because it might or might not be clobbered. it depends.
+            assert out[4:7] == [17, 17, 17]
+            return out[0], out[1], out[2]
+        else:
+            return None
 
     def saveScreen(self, filename):
         render_target = sdl2.SDL_CreateRGBSurface(0, self.windowWidth, self.windowHeight, 32,
