@@ -166,7 +166,8 @@ class Display:
             flags |= sdl2.SDL_FLIP_HORIZONTAL
         if flipVertical:
             flags |= sdl2.SDL_FLIP_VERTICAL
-        assert sdl2.SDL_RenderCopyEx(self.renderer, image.get_texture(self.renderer), None, target_rect, rotate, None, flags)
+        assert sdl2.SDL_RenderCopyEx(self.renderer, image.get_texture(self.renderer), None, target_rect, rotate, None,
+                                     flags) == 0, "Could not render image: %s" % sdl2.SDL_GetError()
 
     def getFontList(self):
         return pygame_sysfont.get_fonts()
@@ -239,11 +240,16 @@ class Display:
             return None
 
     def saveScreen(self, filename):
-        render_target = sdl2.SDL_CreateRGBSurface(0, self.windowWidth, self.windowHeight, 32,
+        wp, hp = (ctypes.c_int)(), (ctypes.c_int)()
+        assert sdl2.SDL_GetRendererOutputSize(self.renderer, ctypes.pointer(wp), ctypes.pointer(hp)) == 0, \
+            "Could not get renderer size: %s" % sdl2.SDL_GetError()
+        w, h = wp.value, hp.value
+        render_target = sdl2.SDL_CreateRGBSurface(0, w, h, 32,
                                                   0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000)
         assert render_target is not None, "Could not create RGB surface for screenshot: %s" % sdl2.SDL_GetError()
         try:
-            assert sdl2.SDL_RenderReadPixels(self.renderer, sdl2.SDL_Rect(0, 0, self.windowWidth, self.windowHeight),
+            print("rendering to", render_target.contents.pixels, render_target.contents.pitch)
+            assert sdl2.SDL_RenderReadPixels(self.renderer, sdl2.SDL_Rect(0, 0, w, h),
                                              sdl2.SDL_PIXELFORMAT_ARGB8888,
                                              render_target.contents.pixels,
                                              render_target.contents.pitch) == 0, "Could not read screenshot: %s" % sdl2.SDL_GetError()

@@ -18,6 +18,8 @@ class Audio:
     def playSound(self, sound, repeat=False):
         pass # TODO working here
 
+loadSound = Audio.loadSound
+
 def playSound(sound, repeat=False):
     if repeat:
         sound.play(-1)

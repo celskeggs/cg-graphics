@@ -151,6 +151,7 @@ drawPolygon = _GLI.display.drawPolygon
 fillPolygon = _GLI.display.fillPolygon
 sizeString = _GLI.display.sizeString
 drawString = _GLI.display.drawString
+drawImage = _GLI.display.drawImage
 getFontList = _GLI.display.getFontList
 
 # fps
