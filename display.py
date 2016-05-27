@@ -34,6 +34,9 @@ class Display:
             assert sdl2.SDL_RenderSetLogicalSize(self.renderer, width,
                                                  height) == 0, "Could not set logical size: %s" % sdl2.SDL_GetError()
 
+    def getPixelFormat(self):
+        return sdl2.SDL_GetWindowPixelFormat(self.window)
+
     def getWindowWidth(self):
         return self.windowWidth
 
@@ -163,7 +166,7 @@ class Display:
             flags |= sdl2.SDL_FLIP_HORIZONTAL
         if flipVertical:
             flags |= sdl2.SDL_FLIP_VERTICAL
-        assert sdl2.SDL_RenderCopyEx(self.renderer, image.get_texture(), None, target_rect, rotate, None, flags)
+        assert sdl2.SDL_RenderCopyEx(self.renderer, image.get_texture(self.renderer), None, target_rect, rotate, None, flags)
 
     def getFontList(self):
         return pygame_sysfont.get_fonts()
@@ -244,7 +247,7 @@ class Display:
                                              sdl2.SDL_PIXELFORMAT_ARGB8888,
                                              render_target.contents.pixels,
                                              render_target.contents.pitch) == 0, "Could not read screenshot: %s" % sdl2.SDL_GetError()
-            image.saveImage(render_target, filename)
+            image.saveImage(image.wrapSurface(render_target), filename)
         finally:
             sdl2.SDL_FreeSurface(render_target)
 

@@ -175,6 +175,7 @@ getImageWidth = image.getImageWidth
 getImageHeight = image.getImageHeight
 getImagePixel = image.getImagePixel
 getImageRegion = image.getImageRegion
+image.setDisplay(_GLI.display)
 
 # joysticks
 
