@@ -28,3 +28,6 @@ def test_lookupColor_raw():
             for b in elems:
                 val = "#%.2x%.2x%.2x" % (r, g, b)
                 assert graphics.lookupColor(val) == val
+
+def test_rest():
+    assert False, "There's a bunch more stuf to do to get colors.py to be tested!"
