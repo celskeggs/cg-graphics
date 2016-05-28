@@ -82,7 +82,7 @@ def getImageHeight(image):
 
 
 def getImagePixel(image, x, y):
-    assert type(image) == Image
+    assert isinstance(image, Image)
     surf = image.surface
     assert sdl2.SDL_LockSurface(surf) == 0, "Could not lock surface: %s" % sdl2.SDL_GetError()
     try:
@@ -124,7 +124,7 @@ def getImageRegion(image, x, y, width, height):
 
 
 def saveImage(image, filename):
-    assert type(image) == Image
+    assert isinstance(image, Image)
     # Always saves images in BMP or PNG, unlike pygame.
     if filename.lower().endswith(".bmp"):
         assert sdl2.SDL_SaveBMP(image.surface, filename.encode()) == 0, "Could not save image: %s" % sdl2.SDL_GetError()

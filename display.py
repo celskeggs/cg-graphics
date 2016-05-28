@@ -248,7 +248,6 @@ class Display:
                                                   0x00ff0000, 0x0000ff00, 0x000000ff, 0xff000000)
         assert render_target is not None, "Could not create RGB surface for screenshot: %s" % sdl2.SDL_GetError()
         try:
-            print("rendering to", render_target.contents.pixels, render_target.contents.pitch)
             assert sdl2.SDL_RenderReadPixels(self.renderer, sdl2.SDL_Rect(0, 0, w, h),
                                              sdl2.SDL_PIXELFORMAT_ARGB8888,
                                              render_target.contents.pixels,
