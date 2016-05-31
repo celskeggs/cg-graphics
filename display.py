@@ -8,7 +8,7 @@ class Display:
     def __init__(self):
         self.windowWidth, self.windowHeight = 0, 0
         self.background = DEFAULT_BACKGROUND
-        self.foreground = DEFAULT_FOREGROUND  # TODO: use this
+        self.foreground = DEFAULT_FOREGROUND
         self.window = None
         self.renderer = None
         self.fonts = {}
@@ -46,24 +46,29 @@ class Display:
     def setWindowTitle(self, title):
         sdl2.SDL_SetWindowTitle(self.window, str(title))
 
-    def drawPixel(self, x, y, color=DEFAULT_FOREGROUND):
+    def drawPixel(self, x, y, color=None):
+        color = color or self.foreground
         self.set_render_color(colors.lookupColor(color))
         assert sdl2.SDL_RenderDrawPoint(self.renderer, int(x), int(y)) == 0, \
             "Could not draw pixel: %s" % sdl2.SDL_GetError()
 
-    def drawLine(self, x1, y1, x2, y2, color=DEFAULT_FOREGROUND, thickness=1):
+    def drawLine(self, x1, y1, x2, y2, color=None, thickness=1):
+        color = color or self.foreground
         assert int(thickness) >= 1, "invalid thickness - gfx will fail"
         r, g, b, a = colors.lookupColor(color)
         assert sdl2.sdlgfx.thickLineRGBA(self.renderer, int(x1), int(y1), int(x2), int(y2), int(thickness), r, g, b,
                                          a) == 0, "Could not draw line: %s" % sdl2.SDL_GetError()
 
-    def drawCircle(self, x, y, radius, color=DEFAULT_FOREGROUND, thickness=1):
+    def drawCircle(self, x, y, radius, color=None, thickness=1):
+        color = color or self.foreground
         self.drawEllipse(x, y, radius, radius, color, thickness)
 
-    def fillCircle(self, x, y, radius, color=DEFAULT_FOREGROUND):
+    def fillCircle(self, x, y, radius, color=None):
+        color = color or self.foreground
         self.drawCircle(x, y, radius, color, 0)
 
-    def drawEllipse(self, x, y, width, height, color=DEFAULT_FOREGROUND, thickness=1):
+    def drawEllipse(self, x, y, width, height, color=None, thickness=1):
+        color = color or self.foreground
         thickness = int(thickness)
         r, g, b, a = colors.lookupColor(color)
         if thickness <= 0:
@@ -76,17 +81,21 @@ class Display:
                                                int(height / 2) - loop, r, g, b, a) == 0, \
                     "Could not draw ellipse: %s" % sdl2.SDL_GetError()
 
-    def fillEllipse(self, x, y, width, height, color=DEFAULT_FOREGROUND):
+    def fillEllipse(self, x, y, width, height, color=None):
+        color = color or self.foreground
         self.drawEllipse(x, y, width, height, color, 0)
 
-    def drawRectangle(self, x, y, width, height, color=DEFAULT_FOREGROUND, thickness=1):
+    def drawRectangle(self, x, y, width, height, color=None, thickness=1):
+        color = color or self.foreground
         self.drawPolygon(((x, y), (x + width - 1, y), (x + width - 1, y + height - 1), (x, y + height - 1)), color,
                          thickness)
 
-    def fillRectangle(self, x, y, width, height, color=DEFAULT_FOREGROUND):
+    def fillRectangle(self, x, y, width, height, color=None):
+        color = color or self.foreground
         self.drawRectangle(x, y, width, height, color, 0)
 
-    def drawPolygon(self, pointlist, color=DEFAULT_FOREGROUND, thickness=1):
+    def drawPolygon(self, pointlist, color=None, thickness=1):
+        color = color or self.foreground
         thickness = int(thickness)
         if thickness > 0:
             for i, (x1, y1) in enumerate(pointlist):
@@ -102,7 +111,8 @@ class Display:
             assert sdl2.sdlgfx.filledPolygonRGBA(self.renderer, xptr, yptr, len(pointlist), int(r), int(g), int(b), 255) \
                    == 0, "Could not fill polygon: %s" % sdl2.SDL_GetError()
 
-    def fillPolygon(self, pointlist, color=DEFAULT_FOREGROUND):
+    def fillPolygon(self, pointlist, color=None):
+        color = color or self.foreground
         self.drawPolygon(pointlist, color, 0)
 
     # internal only
@@ -136,7 +146,8 @@ class Display:
         else:
             return sdl2.SDL_Color(color[0], color[1], color[2])
 
-    def drawString(self, text, x, y, size=30, color=DEFAULT_FOREGROUND, bold=False, italic=False, font=None):
+    def drawString(self, text, x, y, size=30, color=None, bold=False, italic=False, font=None):
+        color = color or self.foreground
         color = self.convertColor(colors.lookupColor(color))
         font = self.getCachedFont(bold, font, italic, size)
         # TODO: do we want to change the quality?
