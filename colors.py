@@ -153,42 +153,52 @@ for name, red, green, blue, hexcolor in colorList:
     assert hexcolor == "#%.2x%.2x%.2x" % (red, green, blue)
 
 colorNames = [name for name, red, green, blue, hexcolor in colorList]
-colorTable = dict((name, (red, green, blue)) for name, red, green, blue, hexcolor in colorList)
+colorTable = dict((name, (red, green, blue, 0xFF)) for name, red, green, blue, hexcolor in colorList)
+
 
 def lookupColor(color):
     # multiple ways to specify a color
     if type(color) == tuple:
-        if len(color) == 4:
-            raise ValueError("You cannot specify an alpha channel: write, for example, (128, 128, 0), not (128, 128, 0, 255)")
-        if len(color) != 3:
-            raise ValueError("Colors specified by components must have three elements, as in (128, 128, 0)")
+        if len(color) == 3:
+            color += (255,)
+        if len(color) != 4:
+            raise ValueError(
+                "Colors specified by components must have three or four elements, as in (128, 128, 0) or (128, 128, 0, 128)")
         if type(color[0]) != int or type(color[1]) != int or type(color[2]) != int:
-            raise ValueError("Colors must be specified with integer components: use the int() function to convert the components to integers")
-        if not (0 <= color[0] < 256 and 0 <= color[1] < 256 and 0 <= color[2] < 256):
+            raise ValueError(
+                "Colors must be specified with integer components: use the int() function to convert the components to integers")
+        if not (0 <= color[0] < 256 and 0 <= color[1] < 256 and 0 <= color[2] < 256 and 0 <= color[3] < 256):
             raise ValueError("Color has an invalid component: components must be 0 (minimum) to 255 (maximum)")
         return color
     elif type(color) == str:
         if color[0:1] == "#":
             if len(color) == 4:
-                color = color[1:2] + color[1:3] + color[2:4] + color[3:4]
+                color = color[1:2] + color[1:3] + color[2:4] + color[3:4] + "FF"
+            elif len(color) == 5:
+                color = color[1:2] + color[1:3] + color[2:4] + color[3:5] + color[4:5]
             elif len(color) == 7:
-                color = color[1:7]
+                color = color[1:7] + "FF"
+            elif len(color) == 9:
+                color = color[1:9]
             else:
-                raise ValueError("Colors specified with a hex code must have either 3 or 6 hex digits")
-            assert len(color) == 6
+                raise ValueError("Colors specified with a hex code must have either 3, 4, 6, or 8 hex digits")
+            assert len(color) == 8
             for c in color:
                 if c not in "0123456789ABCDEFabcdef":
                     raise ValueError("Colors specified with a hex code must only use hex digits")
-            return int(color[0:2], 16), int(color[2:4], 16), int(color[4:6], 16)
+            return int(color[0:2], 16), int(color[2:4], 16), int(color[4:6], 16), int(color[6:8], 16)
         try:
             return colorTable[color]
         except KeyError:
             raise ValueError("Unknown color name: %s" % color)
     else:
-        raise ValueError("To specify a color, either use the color name, such as \"olive\", the components of the color, such as (128, 128, 0), or a hex code, such as #808000")
+        raise ValueError(
+            "To specify a color, either use the color name, such as \"olive\", the components of the color, such as (128, 128, 0), or a hex code, such as #808000")
+
 
 def getColorsList():
     return colorNames
+
 
 if __name__ == "__main__":
     with open("colors.html", "w") as web:

@@ -47,15 +47,15 @@ class Display:
         sdl2.SDL_SetWindowTitle(self.window, str(title))
 
     def drawPixel(self, x, y, color=DEFAULT_FOREGROUND):
-        self.set_render_color(color)
+        self.set_render_color(colors.lookupColor(color))
         assert sdl2.SDL_RenderDrawPoint(self.renderer, int(x), int(y)) == 0, \
             "Could not draw pixel: %s" % sdl2.SDL_GetError()
 
     def drawLine(self, x1, y1, x2, y2, color=DEFAULT_FOREGROUND, thickness=1):
         assert int(thickness) >= 1, "invalid thickness - gfx will fail"
-        r, g, b = colors.lookupColor(color)
-        assert sdl2.sdlgfx.thickLineRGBA(self.renderer, int(x1), int(y1), int(x2), int(y2), int(thickness), int(r),
-                                         int(g), int(b), 255) == 0, "Could not draw line: %s" % sdl2.SDL_GetError()
+        r, g, b, a = colors.lookupColor(color)
+        assert sdl2.sdlgfx.thickLineRGBA(self.renderer, int(x1), int(y1), int(x2), int(y2), int(thickness), r, g, b,
+                                         a) == 0, "Could not draw line: %s" % sdl2.SDL_GetError()
 
     def drawCircle(self, x, y, radius, color=DEFAULT_FOREGROUND, thickness=1):
         self.drawEllipse(x, y, radius, radius, color, thickness)
@@ -65,16 +65,15 @@ class Display:
 
     def drawEllipse(self, x, y, width, height, color=DEFAULT_FOREGROUND, thickness=1):
         thickness = int(thickness)
-        r, g, b = colors.lookupColor(color)
+        r, g, b, a = colors.lookupColor(color)
         if thickness <= 0:
-            assert sdl2.sdlgfx.filledEllipseRGBA(self.renderer, int(x), int(y), int(width), int(height), int(r),
-                                                 int(g), int(b), 255) == 0, \
+            assert sdl2.sdlgfx.filledEllipseRGBA(self.renderer, int(x), int(y), int(width), int(height), r, g, b, a) == 0, \
                 "Could not fill ellipse: %s" % sdl2.SDL_GetError()
         else:
             # what on earth was pygame doing???
             for loop in range(thickness):
                 assert sdl2.sdlgfx.ellipseRGBA(self.renderer, int(x), int(y), int(width / 2) - loop,
-                                               int(height / 2) - loop, int(r), int(g), int(b), 255) == 0, \
+                                               int(height / 2) - loop, r, g, b, a) == 0, \
                     "Could not draw ellipse: %s" % sdl2.SDL_GetError()
 
     def fillEllipse(self, x, y, width, height, color=DEFAULT_FOREGROUND):
@@ -188,8 +187,8 @@ class Display:
             assert sdl2.SDL_RenderClear(self.renderer) == 0, "Could not set render color: %s" % sdl2.SDL_GetError()
 
     def set_render_color(self, color):
-        r, g, b = color
-        assert sdl2.SDL_SetRenderDrawColor(self.renderer, r, g, b, 255) == 0, \
+        r, g, b, a = color
+        assert sdl2.SDL_SetRenderDrawColor(self.renderer, r, g, b, a) == 0, \
             "Could not set render color: %s" % sdl2.SDL_GetError()
 
     def getAllScreenSizes(self):
